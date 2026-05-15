@@ -173,6 +173,10 @@ A form for the Finance team (or Admin) to create a new claim line item.
 - Search bar (searches across claim description, claimant name, claim ID).
 - Filter dropdown for status (`Awaiting Statement` / `Statement Attached`).
 - Filter dropdown for claimant — two options only: **"All Claimants"** (default) and **"Unassigned"** (surfaces claims that still need a claimant assigned).
+- **Date range filter** — two date pickers ("From" and "To") on the claim's Created Date. Maximum span enforced to **12 months**; the system clamps the "To" date if the user picks a wider range. A "Clear" button resets both fields.
+- **Default sort order:** Created Date, descending (newest first).
+- **Column sorting:** All data columns (Claim ID, Description, Period, Entity, Claimant, Status, Created) are sortable by clicking the column header. First click sorts ascending, second click toggles to descending. Up/down arrows indicate the active column and direction. Icon-only columns (Drive, Edit, Statement) are not sortable.
+- **Pagination:** 20 rows per page. The footer shows "Showing X–Y of N claims · 20 per page" and Previous / page-number / Next controls.
 
 ### 7.5 Receipt Upload Flow
 
@@ -260,6 +264,10 @@ The detail page has two sections:
 
 - Search bar (searches across statement ID, linked claim, statement date).
 - Filter dropdown for verification status.
+- **Date range filter** — two date pickers ("From" and "To") on the Statement Date. Maximum span enforced to **12 months**; the system clamps the "To" date if the user picks a wider range. A "Clear" button resets both fields.
+- **Default sort order:** Statement Date, descending (newest first).
+- **Column sorting:** All data columns (Statement ID, Statement Date, Linked Claim, Upload Date, Verification) are sortable by clicking the column header. First click sorts ascending, second click toggles to descending. Up/down arrows indicate the active column and direction. Action columns (Actions, Start) are not sortable.
+- **Pagination:** 20 rows per page. The footer shows "Showing X–Y of N statements · 20 per page" and Previous / page-number / Next controls.
 
 ---
 

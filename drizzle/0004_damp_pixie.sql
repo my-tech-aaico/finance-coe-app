@@ -1,0 +1,1 @@
+ALTER TABLE "claim" ALTER COLUMN "sequence_number" SET DATA TYPE bigint;

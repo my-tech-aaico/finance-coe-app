@@ -328,6 +328,23 @@ tailwind.config = {
   }
   .file-drop:hover { border-color: #4263eb; background: rgba(66,99,235,0.03); }
 
+  /* Sortable table headers */
+  .sortable {
+    cursor: pointer; user-select: none; transition: color 0.15s;
+  }
+  .sortable:hover { color: #4263eb; }
+  html.dark .sortable:hover { color: #91a7ff; }
+  .sort-arrows {
+    display: inline-flex; flex-direction: column; gap: 1px;
+    margin-left: 4px; vertical-align: middle;
+  }
+  .sort-arrows svg { display: block; }
+  .sort-arrow-up, .sort-arrow-down { opacity: 0.3; transition: opacity 0.15s; }
+  .sortable.sort-asc .sort-arrow-up { opacity: 1; color: #4263eb; }
+  .sortable.sort-desc .sort-arrow-down { opacity: 1; color: #4263eb; }
+  html.dark .sortable.sort-asc .sort-arrow-up,
+  html.dark .sortable.sort-desc .sort-arrow-down { color: #91a7ff; }
+
   ::-webkit-scrollbar { width: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: #d1d5de; border-radius: 3px; }
@@ -790,7 +807,7 @@ tailwind.config = {
         </div>
 
         <!-- Filters -->
-        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+        <div class="flex flex-col lg:flex-row gap-3 mb-3">
           <div class="relative flex-1 w-full lg:max-w-sm">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             <input type="text" placeholder="Search claims..." class="input-field pl-9 w-full">
@@ -806,19 +823,45 @@ tailwind.config = {
           </select>
         </div>
 
+        <!-- Date Range Filter -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+          <span class="text-xs font-semibold text-surface-500 uppercase tracking-wider flex-shrink-0">Date range:</span>
+          <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center flex-1">
+            <input type="date" id="receipts-date-from" onchange="enforceDateRange('receipts')" class="input-field w-full sm:w-auto" aria-label="From date">
+            <span class="text-sm text-surface-400 hidden sm:inline">to</span>
+            <input type="date" id="receipts-date-to" onchange="enforceDateRange('receipts')" class="input-field w-full sm:w-auto" aria-label="To date">
+            <button onclick="clearDateRange('receipts')" class="btn-secondary text-xs !py-2 !px-3 self-start sm:self-auto">Clear</button>
+            <span class="text-xs text-surface-400 ml-0 sm:ml-2">Max 12 months</span>
+          </div>
+        </div>
+
         <!-- Table -->
         <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
-                  <th class="text-left px-5 py-3.5 font-semibold">Claim ID</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Description</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Period</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Entity</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Claimant</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Status</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Created</th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Claim ID<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Description<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Period<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Entity<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Claimant<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Status<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable sort-desc text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
+                    <span class="inline-flex items-center">Created<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
                   <th class="text-center px-5 py-3.5 font-semibold">Drive</th>
                   <th class="text-center px-3 py-3.5 font-semibold">Edit</th>
                   <th class="text-center px-3 py-3.5 font-semibold">Statement</th>
@@ -876,10 +919,22 @@ tailwind.config = {
               </tbody>
             </table>
           </div>
+
+          <!-- Pagination -->
+          <div class="px-5 py-3 border-t border-surface-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p class="text-xs text-surface-400">Showing <span class="font-medium text-surface-700">1–4</span> of <span class="font-medium text-surface-700">4</span> claims · 20 per page</p>
+            <div class="flex items-center gap-1.5">
+              <button class="btn-icon !w-8 !h-8" title="Previous page" disabled style="opacity:0.4;cursor:not-allowed;">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="btn-icon !w-8 !h-8 !border-brand-600" style="background:#4263eb;color:white;" title="Page 1">1</button>
+              <button class="btn-icon !w-8 !h-8" title="Next page" disabled style="opacity:0.4;cursor:not-allowed;">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-
-      <!-- Receipts: Create Claim Form -->
       <div id="receipts-form" class="hidden animate-in">
         <button onclick="hideReceiptsForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
           <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -996,7 +1051,7 @@ tailwind.config = {
         </div>
 
         <!-- Filters -->
-        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+        <div class="flex flex-col lg:flex-row gap-3 mb-3">
           <div class="relative flex-1 w-full lg:max-w-sm">
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             <input type="text" placeholder="Search statements..." class="input-field pl-9 w-full">
@@ -1011,17 +1066,39 @@ tailwind.config = {
           </select>
         </div>
 
+        <!-- Date Range Filter -->
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3 mb-5">
+          <span class="text-xs font-semibold text-surface-500 uppercase tracking-wider flex-shrink-0">Statement date range:</span>
+          <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center flex-1">
+            <input type="date" id="statements-date-from" onchange="enforceDateRange('statements')" class="input-field w-full sm:w-auto" aria-label="From date">
+            <span class="text-sm text-surface-400 hidden sm:inline">to</span>
+            <input type="date" id="statements-date-to" onchange="enforceDateRange('statements')" class="input-field w-full sm:w-auto" aria-label="To date">
+            <button onclick="clearDateRange('statements')" class="btn-secondary text-xs !py-2 !px-3 self-start sm:self-auto">Clear</button>
+            <span class="text-xs text-surface-400 ml-0 sm:ml-2">Max 12 months</span>
+          </div>
+        </div>
+
         <!-- Table -->
         <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
-                  <th class="text-left px-5 py-3.5 font-semibold">Statement ID</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Statement Date</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Linked Claim</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Upload Date</th>
-                  <th class="text-left px-5 py-3.5 font-semibold">Verification</th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'statements')">
+                    <span class="inline-flex items-center">Statement ID<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable sort-desc text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'statements')">
+                    <span class="inline-flex items-center">Statement Date<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'statements')">
+                    <span class="inline-flex items-center">Linked Claim<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'statements')">
+                    <span class="inline-flex items-center">Upload Date<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'statements')">
+                    <span class="inline-flex items-center">Verification<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
                   <th class="text-center px-5 py-3.5 font-semibold">Actions</th>
                   <th class="text-center px-3 py-3.5 font-semibold">Start</th>
                 </tr>
@@ -1044,17 +1121,6 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-004</span> <span class="text-surface-400">· Team lunch</span></td>
                   <td class="px-5 py-4 text-surface-400">8 May 2026</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#eff6ff;color:#1d4ed8;"><style>.badge[style*='eff6ff']::before{background:#3b82f6;}</style>In Progress</span></td>
-                  <td class="px-5 py-4 text-center">
-                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
-                  </td>
-                  <td class="px-3 py-4 text-center"></td>
-                </tr>
-                <tr class="table-row">
-                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-003</td>
-                  <td class="px-5 py-4 text-surface-600">31 Mar 2026</td>
-                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-005</span> <span class="text-surface-400">· Software license renewal</span></td>
-                  <td class="px-5 py-4 text-surface-400">5 May 2026</td>
-                  <td class="px-5 py-4"><span class="badge" style="background:#fef2f2;color:#b91c1c;"><style>.badge[style*='fef2f2']::before{background:#ef4444;}</style>Failed</span></td>
                   <td class="px-5 py-4 text-center">
                     <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
                   </td>
@@ -1086,8 +1152,33 @@ tailwind.config = {
                   </td>
                   <td class="px-3 py-4 text-center"></td>
                 </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-003</td>
+                  <td class="px-5 py-4 text-surface-600">31 Mar 2026</td>
+                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-005</span> <span class="text-surface-400">· Software license renewal</span></td>
+                  <td class="px-5 py-4 text-surface-400">5 May 2026</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#fef2f2;color:#b91c1c;"><style>.badge[style*='fef2f2']::before{background:#ef4444;}</style>Failed</span></td>
+                  <td class="px-5 py-4 text-center">
+                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
+                  </td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="px-5 py-3 border-t border-surface-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <p class="text-xs text-surface-400">Showing <span class="font-medium text-surface-700">1–5</span> of <span class="font-medium text-surface-700">5</span> statements · 20 per page</p>
+            <div class="flex items-center gap-1.5">
+              <button class="btn-icon !w-8 !h-8" title="Previous page" disabled style="opacity:0.4;cursor:not-allowed;">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+              <button class="btn-icon !w-8 !h-8" style="background:#4263eb;color:white;border-color:#4263eb;" title="Page 1">1</button>
+              <button class="btn-icon !w-8 !h-8" title="Next page" disabled style="opacity:0.4;cursor:not-allowed;">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1697,6 +1788,97 @@ tailwind.config = {
 </div>
 
 <script>
+  // Sortable table columns
+  function sortColumn(thEl, tableId) {
+    const tr = thEl.parentElement;
+    const allTh = Array.from(tr.children);
+    const columnIndex = allTh.indexOf(thEl);
+
+    // Determine new direction
+    const wasAsc = thEl.classList.contains('sort-asc');
+    const wasDesc = thEl.classList.contains('sort-desc');
+    let newDir;
+    if (wasAsc) newDir = 'desc';
+    else if (wasDesc) newDir = 'asc';
+    else newDir = 'asc';
+
+    // Clear sort indicators on all headers in this table
+    allTh.forEach(th => th.classList.remove('sort-asc', 'sort-desc'));
+    thEl.classList.add('sort-' + newDir);
+
+    // Get tbody and sort rows
+    const table = thEl.closest('table');
+    const tbody = table.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+
+    // Helper: parse a cell's value for comparison
+    const getValue = (row) => {
+      const cell = row.children[columnIndex];
+      if (!cell) return '';
+      const txt = cell.textContent.trim();
+      // Try date parsing (e.g. "12 May 2026", "31 Mar 2026")
+      const dateMatch = txt.match(/(\d{1,2})\s+([A-Za-z]{3,})\s+(\d{4})/);
+      if (dateMatch) {
+        const months = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+        const mKey = dateMatch[2].substring(0,3);
+        if (months[mKey] !== undefined) {
+          return new Date(parseInt(dateMatch[3]), months[mKey], parseInt(dateMatch[1])).getTime();
+        }
+      }
+      // Try numeric
+      const num = parseFloat(txt.replace(/[^0-9.-]/g, ''));
+      if (!isNaN(num) && txt.match(/^[\s\-0-9.,$]+$/)) return num;
+      // Default: lowercase string
+      return txt.toLowerCase();
+    };
+
+    rows.sort((a, b) => {
+      const va = getValue(a);
+      const vb = getValue(b);
+      if (va < vb) return newDir === 'asc' ? -1 : 1;
+      if (va > vb) return newDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    rows.forEach(r => tbody.appendChild(r));
+  }
+
+  // Date range filter (enforce max 12 months)
+  function enforceDateRange(prefix) {
+    const fromEl = document.getElementById(prefix + '-date-from');
+    const toEl = document.getElementById(prefix + '-date-to');
+    const fromVal = fromEl.value;
+    const toVal = toEl.value;
+    if (!fromVal || !toVal) return;
+
+    const fromDate = new Date(fromVal);
+    const toDate = new Date(toVal);
+
+    // If to < from, swap or reset
+    if (toDate < fromDate) {
+      alert('"To" date cannot be earlier than "From" date.');
+      toEl.value = '';
+      return;
+    }
+
+    // Max 12 months (approximated as 366 days to be inclusive)
+    const maxToDate = new Date(fromDate);
+    maxToDate.setFullYear(maxToDate.getFullYear() + 1);
+
+    if (toDate > maxToDate) {
+      alert('Date range cannot exceed 12 months. The "To" date has been adjusted.');
+      // Format back to yyyy-mm-dd
+      const yyyy = maxToDate.getFullYear();
+      const mm = String(maxToDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(maxToDate.getDate()).padStart(2, '0');
+      toEl.value = `${yyyy}-${mm}-${dd}`;
+    }
+  }
+  function clearDateRange(prefix) {
+    document.getElementById(prefix + '-date-from').value = '';
+    document.getElementById(prefix + '-date-to').value = '';
+  }
+
   // Theme toggle (dark/light)
   function toggleTheme() {
     const html = document.documentElement;
