@@ -29,6 +29,13 @@ docker run -d \
   postgres:16
 ```
 
+When pc is restarted, you can start the container:
+
+```bash
+docker start finance-coe-db
+```
+
+
 To stop and remove the container:
 
 ```bash

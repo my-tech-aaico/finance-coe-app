@@ -834,7 +834,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="badge" style="background:#fffbeb;color:#b45309;"><style>.badge[style*='fffbeb']::before{background:#f59e0b;}</style>Awaiting Statement</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">12 May 2026</td>
                   <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
                   <td class="px-3 py-4 text-center"></td>
                 </tr>
                 <tr class="table-row">
@@ -846,7 +846,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;"><style>.badge[style*='ecfdf5']::before{background:#10b981;}</style>Statement Attached</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">10 May 2026</td>
                   <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
                   <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="View Statement"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
                 </tr>
                 <tr class="table-row">
@@ -858,7 +858,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="badge" style="background:#fffbeb;color:#b45309;">Awaiting Statement</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">8 May 2026</td>
                   <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
                   <td class="px-3 py-4 text-center"></td>
                 </tr>
                 <tr class="table-row">
@@ -870,7 +870,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Statement Attached</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">5 May 2026</td>
                   <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
                   <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="View Statement"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
                 </tr>
               </tbody>
@@ -886,14 +886,20 @@ tailwind.config = {
           Back to Claims
         </button>
         <div class="max-w-lg">
-          <h2 class="text-xl font-bold text-surface-900 mb-1">New Claim</h2>
-          <p class="text-sm text-surface-400 mb-8">Create a new claim line item. A Google Drive folder will be generated automatically.</p>
+          <h2 id="claim-form-title" class="text-xl font-bold text-surface-900 mb-1">New Claim</h2>
+          <p id="claim-form-subtitle" class="text-sm text-surface-400 mb-8">Create a new claim line item. A Google Drive folder will be generated automatically.</p>
+
+          <!-- Edit-mode info banner (only shown in edit mode) -->
+          <div id="claim-form-edit-note" class="hidden mb-6 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-2.5">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" class="flex-shrink-0 mt-0.5 text-amber-700"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <p class="text-xs text-amber-700 leading-relaxed">Claim Month, Year, and Entity cannot be changed after creation because they're part of the Claim ID. You can edit the description and assign/change the claimant.</p>
+          </div>
 
           <div class="space-y-5">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="input-label">Claim Month <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-                <select class="input-field">
+                <select id="claim-form-month" class="input-field">
                   <option value="" disabled>Select month...</option>
                   <option>January</option>
                   <option>February</option>
@@ -911,7 +917,7 @@ tailwind.config = {
               </div>
               <div>
                 <label class="input-label">Claim Year <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-                <select class="input-field">
+                <select id="claim-form-year" class="input-field">
                   <option>2024</option>
                   <option>2025</option>
                   <option selected>2026</option>
@@ -924,7 +930,7 @@ tailwind.config = {
             </div>
             <div>
               <label class="input-label">Entity <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-              <select class="input-field">
+              <select id="claim-form-entity" class="input-field">
                 <option value="" disabled selected>Select entity...</option>
                 <option>apd-my</option>
                 <option>apd-sg</option>
@@ -934,11 +940,11 @@ tailwind.config = {
             </div>
             <div>
               <label class="input-label">Description <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-              <textarea class="input-field" rows="3" placeholder="Claim for the month of..."></textarea>
+              <textarea id="claim-form-description" class="input-field" rows="3" placeholder="Claim for the month of..."></textarea>
             </div>
             <div>
               <label class="input-label">Claimant <span class="text-surface-400 font-normal">(optional)</span></label>
-              <select class="input-field">
+              <select id="claim-form-claimant" class="input-field">
                 <option value="" selected>Leave unassigned for now</option>
                 <option>Ahmad Razak</option>
                 <option>Nurul Huda</option>
@@ -952,7 +958,7 @@ tailwind.config = {
           <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
 
           <div class="flex gap-3 mt-4">
-            <button class="btn-primary">Create Claim</button>
+            <button id="claim-form-submit" class="btn-primary">Create Claim</button>
             <button onclick="hideReceiptsForm()" class="btn-secondary">Cancel</button>
           </div>
         </div>
@@ -1349,13 +1355,14 @@ tailwind.config = {
 
     <!-- ===== USER MANAGEMENT ===== -->
     <div id="page-users" class="page">
-      <div class="animate-in">
+      <!-- Users: List View -->
+      <div id="users-list" class="animate-in">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div>
             <h2 class="text-xl font-bold text-surface-900">User Management</h2>
             <p class="text-sm text-surface-400 mt-0.5">Manage portal users and access roles</p>
           </div>
-          <button onclick="showAddUserModal()" class="btn-primary">
+          <button onclick="showAddUserForm()" class="btn-primary">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             Add User
           </button>
@@ -1410,7 +1417,7 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">System</td>
                   <td class="px-5 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
-                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button onclick="showEditUserForm()" class="btn-icon" title="Edit user"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
                   </td>
                 </tr>
@@ -1428,7 +1435,7 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
                   <td class="px-5 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
-                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button onclick="showEditUserForm()" class="btn-icon" title="Edit user"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
                   </td>
                 </tr>
@@ -1446,7 +1453,7 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
                   <td class="px-5 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
-                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button onclick="showEditUserForm()" class="btn-icon" title="Edit user"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
                   </td>
                 </tr>
@@ -1464,7 +1471,7 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
                   <td class="px-5 py-4 text-right">
                     <div class="flex items-center justify-end gap-2">
-                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button onclick="showEditUserForm()" class="btn-icon" title="Edit user"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                     </div>
                   </td>
                 </tr>
@@ -1473,17 +1480,57 @@ tailwind.config = {
           </div>
         </div>
       </div>
+
+      <!-- Users: Add/Edit User Form -->
+      <div id="users-form" class="hidden animate-in">
+        <button onclick="hideAddUserForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Users
+        </button>
+        <div class="max-w-lg">
+          <h2 id="user-form-title" class="text-xl font-bold text-surface-900 mb-1">Add New User</h2>
+          <p id="user-form-subtitle" class="text-sm text-surface-400 mb-8">Pre-register a user so they can sign in with their company Google account.</p>
+
+          <div class="space-y-5">
+            <div>
+              <label class="input-label">Full Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="user-form-name" type="text" class="input-field" placeholder="e.g. Ahmad Razak">
+            </div>
+            <div>
+              <label class="input-label">Email Address <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="user-form-email" type="email" class="input-field" placeholder="e.g. ahmad@company.com">
+            </div>
+            <div>
+              <label class="input-label">Role <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <select id="user-form-role" class="input-field">
+                <option value="" disabled selected>Select role...</option>
+                <option>Admin</option>
+                <option>Finance</option>
+                <option>Employee</option>
+              </select>
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button id="user-form-submit" class="btn-primary">Add User</button>
+            <button onclick="hideAddUserForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ===== ENTITY MANAGEMENT ===== -->
     <div id="page-entities" class="page">
-      <div class="animate-in">
+      <!-- Entities: List View -->
+      <div id="entities-list" class="animate-in">
         <div class="page-header flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
           <div>
             <h2 class="text-xl font-bold text-surface-900">Entities</h2>
             <p class="text-sm text-surface-400 mt-0.5">Configure legal entities that can own claims</p>
           </div>
-          <button onclick="showAddEntityModal()" class="btn-primary">
+          <button onclick="showAddEntityForm()" class="btn-primary">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
             Add Entity
           </button>
@@ -1526,7 +1573,7 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
                   <td class="px-5 py-4 text-right">
-                    <button class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button onclick="showEditEntityForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </td>
                 </tr>
                 <tr class="table-row">
@@ -1537,7 +1584,7 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
                   <td class="px-5 py-4 text-right">
-                    <button class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button onclick="showEditEntityForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </td>
                 </tr>
                 <tr class="table-row">
@@ -1548,11 +1595,56 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-400">15 Feb 2026</td>
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
                   <td class="px-5 py-4 text-right">
-                    <button class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    <button onclick="showEditEntityForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
                   </td>
                 </tr>
               </tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Entities: Add Entity Form -->
+      <div id="entities-form" class="hidden animate-in">
+        <button onclick="hideAddEntityForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Entities
+        </button>
+        <div class="max-w-lg">
+          <h2 id="entity-form-title" class="text-xl font-bold text-surface-900 mb-1">Add New Entity</h2>
+          <p id="entity-form-subtitle" class="text-sm text-surface-400 mb-8">Configure a new legal entity that can own claim records.</p>
+
+          <div class="space-y-5">
+            <div>
+              <label class="input-label">Entity Code <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="entity-form-code" type="text" class="input-field font-mono" placeholder="e.g. apd-th">
+              <p id="entity-form-code-help" class="text-xs text-surface-400 mt-1.5">Lowercase, hyphen-separated. Used in claim IDs and dropdowns.</p>
+            </div>
+            <div>
+              <label class="input-label">Entity Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="entity-form-name" type="text" class="input-field" placeholder="e.g. APD Thailand">
+            </div>
+            <div>
+              <label class="input-label">Country <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <select id="entity-form-country" class="input-field">
+                <option value="" disabled selected>Select country...</option>
+                <option>Malaysia</option>
+                <option>Singapore</option>
+                <option>Hong Kong</option>
+                <option>Thailand</option>
+                <option>Indonesia</option>
+                <option>Philippines</option>
+                <option>Vietnam</option>
+                <option>United Arab Emirates</option>
+              </select>
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button id="entity-form-submit" class="btn-primary">Add Entity</button>
+            <button onclick="hideAddEntityForm()" class="btn-secondary">Cancel</button>
           </div>
         </div>
       </div>
@@ -1561,83 +1653,6 @@ tailwind.config = {
   </main>
 </div>
 
-<!-- ========== ADD ENTITY MODAL ========== -->
-<div id="add-entity-modal" class="modal-overlay">
-  <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-    <div class="px-6 py-5 border-b border-surface-100 flex items-center justify-between">
-      <h3 class="text-lg font-bold text-surface-900">Add New Entity</h3>
-      <button onclick="hideAddEntityModal()" class="btn-icon !border-0 !w-8 !h-8">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="px-6 py-6 space-y-5">
-      <div>
-        <label class="input-label">Entity Code <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-        <input type="text" class="input-field font-mono" placeholder="e.g. apd-th">
-        <p class="text-xs text-surface-400 mt-1.5">Lowercase, hyphen-separated. Used in claim IDs and dropdowns.</p>
-      </div>
-      <div>
-        <label class="input-label">Entity Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-        <input type="text" class="input-field" placeholder="e.g. APD Thailand">
-      </div>
-      <div>
-        <label class="input-label">Country <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-        <select class="input-field">
-          <option value="" disabled selected>Select country...</option>
-          <option>Malaysia</option>
-          <option>Singapore</option>
-          <option>Hong Kong</option>
-          <option>Thailand</option>
-          <option>Indonesia</option>
-          <option>Philippines</option>
-          <option>Vietnam</option>
-          <option>United Arab Emirates</option>
-        </select>
-      </div>
-      <p class="text-xs text-surface-400 pt-2"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
-    </div>
-    <div class="px-6 py-4 bg-surface-50 border-t border-surface-100 flex justify-end gap-3">
-      <button onclick="hideAddEntityModal()" class="btn-secondary">Cancel</button>
-      <button class="btn-primary">Add Entity</button>
-    </div>
-  </div>
-</div>
-
-<!-- ========== ADD USER MODAL ========== -->
-<div id="add-user-modal" class="modal-overlay">
-  <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-    <div class="px-6 py-5 border-b border-surface-100 flex items-center justify-between">
-      <h3 class="text-lg font-bold text-surface-900">Add New User</h3>
-      <button onclick="hideAddUserModal()" class="btn-icon !border-0 !w-8 !h-8">
-        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="px-6 py-6 space-y-5">
-      <div>
-        <label class="input-label">Full Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-        <input type="text" class="input-field" placeholder="e.g. Ahmad Razak">
-      </div>
-      <div>
-        <label class="input-label">Email Address <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-        <input type="email" class="input-field" placeholder="e.g. ahmad@company.com">
-      </div>
-      <div>
-        <label class="input-label">Role <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-        <select class="input-field">
-          <option value="" disabled selected>Select role...</option>
-          <option>Admin</option>
-          <option>Finance</option>
-          <option>Employee</option>
-        </select>
-      </div>
-      <p class="text-xs text-surface-400 pt-2"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
-    </div>
-    <div class="px-6 py-4 bg-surface-50 border-t border-surface-100 flex justify-end gap-3">
-      <button onclick="hideAddUserModal()" class="btn-secondary">Cancel</button>
-      <button class="btn-primary">Add User</button>
-    </div>
-  </div>
-</div>
 
 <!-- ========== LOGIN SCREEN ========== -->
 <div id="login-screen" class="fixed inset-0 z-[200] bg-gradient-to-br from-brand-50 via-white to-surface-50 hidden">
@@ -1734,12 +1749,38 @@ tailwind.config = {
     closeMobileSidebar();
   }
 
-  // Entity modal
-  function showAddEntityModal() {
-    document.getElementById('add-entity-modal').classList.add('show');
+  // Entity form (inline) - supports Add and Edit modes
+  function showAddEntityForm() {
+    // Reset to Add mode
+    document.getElementById('entity-form-title').textContent = 'Add New Entity';
+    document.getElementById('entity-form-subtitle').textContent = 'Configure a new legal entity that can own claim records.';
+    document.getElementById('entity-form-submit').textContent = 'Add Entity';
+    document.getElementById('entity-form-code').value = '';
+    document.getElementById('entity-form-code').disabled = false;
+    document.getElementById('entity-form-code-help').textContent = 'Lowercase, hyphen-separated. Used in claim IDs and dropdowns.';
+    document.getElementById('entity-form-name').value = '';
+    document.getElementById('entity-form-country').selectedIndex = 0;
+
+    document.getElementById('entities-list').classList.add('hidden');
+    document.getElementById('entities-form').classList.remove('hidden');
   }
-  function hideAddEntityModal() {
-    document.getElementById('add-entity-modal').classList.remove('show');
+  function showEditEntityForm() {
+    // Switch to Edit mode (sample pre-filled data)
+    document.getElementById('entity-form-title').textContent = 'Edit Entity';
+    document.getElementById('entity-form-subtitle').textContent = 'Update the entity name or country. The entity code cannot be changed.';
+    document.getElementById('entity-form-submit').textContent = 'Save Changes';
+    document.getElementById('entity-form-code').value = 'apd-my';
+    document.getElementById('entity-form-code').disabled = true;
+    document.getElementById('entity-form-code-help').textContent = 'Entity code is immutable because it is referenced by existing claim IDs.';
+    document.getElementById('entity-form-name').value = 'APD Malaysia';
+    document.getElementById('entity-form-country').value = 'Malaysia';
+
+    document.getElementById('entities-list').classList.add('hidden');
+    document.getElementById('entities-form').classList.remove('hidden');
+  }
+  function hideAddEntityForm() {
+    document.getElementById('entities-form').classList.add('hidden');
+    document.getElementById('entities-list').classList.remove('hidden');
   }
 
   // Nav groups
@@ -1811,8 +1852,49 @@ tailwind.config = {
     });
   }
 
-  // Receipts form toggle
+  // Receipts form toggle - supports Add and Edit modes
   function showReceiptsForm() {
+    // Reset to Add (New Claim) mode
+    document.getElementById('claim-form-title').textContent = 'New Claim';
+    document.getElementById('claim-form-subtitle').textContent = 'Create a new claim line item. A Google Drive folder will be generated automatically.';
+    document.getElementById('claim-form-submit').textContent = 'Create Claim';
+    document.getElementById('claim-form-edit-note').classList.add('hidden');
+
+    // All fields enabled
+    document.getElementById('claim-form-month').disabled = false;
+    document.getElementById('claim-form-year').disabled = false;
+    document.getElementById('claim-form-entity').disabled = false;
+
+    // Reset values to defaults
+    document.getElementById('claim-form-month').selectedIndex = 5; // May
+    document.getElementById('claim-form-year').value = '2026';
+    document.getElementById('claim-form-entity').selectedIndex = 0;
+    document.getElementById('claim-form-description').value = '';
+    document.getElementById('claim-form-claimant').selectedIndex = 0;
+
+    document.getElementById('receipts-list').classList.add('hidden');
+    document.getElementById('receipts-empty').classList.add('hidden');
+    document.getElementById('receipts-form').classList.remove('hidden');
+  }
+  function showEditClaimForm() {
+    // Switch to Edit mode (sample pre-filled data)
+    document.getElementById('claim-form-title').textContent = 'Edit Claim';
+    document.getElementById('claim-form-subtitle').textContent = 'Update the description or claimant for this claim.';
+    document.getElementById('claim-form-submit').textContent = 'Save Changes';
+    document.getElementById('claim-form-edit-note').classList.remove('hidden');
+
+    // Immutable fields disabled
+    document.getElementById('claim-form-month').disabled = true;
+    document.getElementById('claim-form-year').disabled = true;
+    document.getElementById('claim-form-entity').disabled = true;
+
+    // Pre-fill with sample claim data (2605-CLM-001)
+    document.getElementById('claim-form-month').value = 'May';
+    document.getElementById('claim-form-year').value = '2026';
+    document.getElementById('claim-form-entity').value = 'apd-my';
+    document.getElementById('claim-form-description').value = 'Claim for the month of May 2026';
+    document.getElementById('claim-form-claimant').selectedIndex = 0;
+
     document.getElementById('receipts-list').classList.add('hidden');
     document.getElementById('receipts-empty').classList.add('hidden');
     document.getElementById('receipts-form').classList.remove('hidden');
@@ -1852,12 +1934,34 @@ tailwind.config = {
     document.getElementById('statements-list').classList.remove('hidden');
   }
 
-  // Add user modal
-  function showAddUserModal() {
-    document.getElementById('add-user-modal').classList.add('show');
+  // Add user form (inline)
+  function showAddUserForm() {
+    // Reset to Add mode
+    document.getElementById('user-form-title').textContent = 'Add New User';
+    document.getElementById('user-form-subtitle').textContent = 'Pre-register a user so they can sign in with their company Google account.';
+    document.getElementById('user-form-submit').textContent = 'Add User';
+    document.getElementById('user-form-name').value = '';
+    document.getElementById('user-form-email').value = '';
+    document.getElementById('user-form-role').selectedIndex = 0;
+
+    document.getElementById('users-list').classList.add('hidden');
+    document.getElementById('users-form').classList.remove('hidden');
   }
-  function hideAddUserModal() {
-    document.getElementById('add-user-modal').classList.remove('show');
+  function showEditUserForm() {
+    // Switch to Edit mode (sample pre-filled data — in real app, would load from row)
+    document.getElementById('user-form-title').textContent = 'Edit User';
+    document.getElementById('user-form-subtitle').textContent = "Update the user's name, email, or role.";
+    document.getElementById('user-form-submit').textContent = 'Save Changes';
+    document.getElementById('user-form-name').value = 'Ahmad Razak';
+    document.getElementById('user-form-email').value = 'ahmad.razak@company.com';
+    document.getElementById('user-form-role').value = 'Employee';
+
+    document.getElementById('users-list').classList.add('hidden');
+    document.getElementById('users-form').classList.remove('hidden');
+  }
+  function hideAddUserForm() {
+    document.getElementById('users-form').classList.add('hidden');
+    document.getElementById('users-list').classList.remove('hidden');
   }
 
   // Toggle empty states (demo)
@@ -1879,14 +1983,6 @@ tailwind.config = {
       document.getElementById('statements-list').classList.remove('hidden');
     }
   }
-
-  // Close modal on overlay click
-  document.getElementById('add-user-modal').addEventListener('click', function(e) {
-    if (e.target === this) hideAddUserModal();
-  });
-  document.getElementById('add-entity-modal').addEventListener('click', function(e) {
-    if (e.target === this) hideAddEntityModal();
-  });
 </script>
 
 </body>

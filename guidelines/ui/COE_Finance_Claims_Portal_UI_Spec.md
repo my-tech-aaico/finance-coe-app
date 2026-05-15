@@ -158,7 +158,7 @@ A form for the Finance team (or Admin) to create a new claim line item.
 | Status            | `Awaiting Statement` or `Statement Attached` (see below)           |
 | Created Date      | Date the claim was created                                         |
 | Google Drive Link | Icon/button that opens the claim's Google Drive folder              |
-| Edit              | Button to edit Description and assign/change Claimant               |
+| Edit              | Opens the claim form inline in Edit mode. Allows editing Description and assigning/changing the Claimant. Claim Month, Year, and Entity are immutable because they form the Claim ID. |
 | View Statement    | Button to navigate to the linked statement (only visible when status is `Statement Attached`) |
 
 ### 7.3 Claim Statuses
@@ -276,9 +276,9 @@ The detail page has two sections:
 | Date Added  | Date the user account was created                |
 | Created By  | The admin who created this user account          |
 
-### 7.2 Add User Modal
+### 7.2 Add User Form
 
-A modal dialog (not a separate page) with the following fields:
+An inline form (full-page view, no modal dialog) with the following fields:
 
 | Field | Type                        | Notes                          |
 |-------|-----------------------------|--------------------------------|
@@ -291,22 +291,11 @@ A modal dialog (not a separate page) with the following fields:
 - User account is created with Active status.
 - The user's company email must match their SSO identity to log in.
 
-### 7.2a Edit User Modal
-
-A modal dialog opened via the pencil icon on a user row. Allows editing:
-
-| Field | Type                        | Notes                          |
-|-------|-----------------------------|--------------------------------|
-| Name  | Text input                  | Editable full name             |
-| Role  | Dropdown                    | Options: Finance, Employee, Admin |
-
-Email is not editable (it is the SSO identity anchor). The last active Admin cannot be demoted via role change.
-
 ### 7.3 User Actions
 
 | Action            | Description                                                    |
 |-------------------|----------------------------------------------------------------|
-| Edit User         | Edit the user's name and role via a modal                      |
+| Edit User         | Opens the user form in Edit mode. Allows editing Name, Email, and Role. |
 | Toggle Status     | Switch between Active and Inactive (no hard deletes)            |
 
 ### 7.4 Table Features
@@ -331,9 +320,9 @@ The Entities page allows Admins to configure the legal entities that own claims 
 | Date Added  | Date the entity was created                                  |
 | Created By  | The admin who created this entity                            |
 
-### 8.2 Add Entity Modal
+### 8.2 Add Entity Form
 
-A modal dialog with the following fields:
+An inline form (full-page view, no modal dialog) with the following fields:
 
 | Field       | Type                       | Notes                                          |
 |-------------|----------------------------|------------------------------------------------|
@@ -345,7 +334,7 @@ A modal dialog with the following fields:
 
 | Action        | Description                                              |
 |---------------|----------------------------------------------------------|
-| Edit          | Modify entity name, country, or status                   |
+| Edit          | Opens the entity form inline in Edit mode. Allows editing entity name and country. Entity Code is immutable because it is referenced by existing claim IDs. |
 | Toggle Status | Switch between Active and Inactive (no hard deletes). Inactive entities do not appear in the claim creation dropdown. |
 
 ### 8.4 Table Features
@@ -370,6 +359,7 @@ A modal dialog with the following fields:
 - **Mobile responsive:** Yes — all views must work on mobile devices.
 - **CSS framework:** Tailwind CSS.
 - **No hard deletes:** Users are deactivated, not deleted, to preserve data integrity.
+- **No modal dialogs:** All Add and Edit interactions use full-page inline forms with a "Back to ..." link, never modal pop-ups.
 - **File types accepted for statements:** PDF, JPG, PNG.
 - **One-to-one linking:** Each statement links to exactly one claim. Each claim can have at most one statement.
 - **Claim assignment:** Claims can be created without a claimant assigned (since Finance may not know the responsible person until receipts are collected). Finance assigns the Claimant later by editing the claim. Once assigned, this determines what users can see in their Statements view. A claimant must be assigned before a statement can be linked.

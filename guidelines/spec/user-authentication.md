@@ -429,24 +429,23 @@ The Google sign-in button in section 7 passes `callbackURL: "/dashboard"` to Bet
 
 CRUD operations on the `user` table, restricted to Admins. Behavior matches UI mock section 7 of the UI spec. No hard deletes — only `Active` ↔ `Inactive` toggle.
 
-| Operation          | UI surface                  | Server Action       |
-|--------------------|-----------------------------|---------------------|
-| List users         | Page (server component)     | n/a (DB read)       |
-| Add user           | "Add User" modal            | `createUser`        |
-| Edit name and role | Pencil icon on a row → modal| `updateUser`        |
-| Toggle status      | Row action with confirm     | `toggleUserStatus`  |
+| Operation                   | UI surface                        | Server Action       |
+|-----------------------------|-----------------------------------|---------------------|
+| List users                  | Page (server component)           | n/a (DB read)       |
+| Add user                    | Inline full-page form             | `createUser`        |
+| Edit name, email, and role  | Pencil icon → same inline form    | `updateUser`        |
+| Toggle status               | Row action with confirm           | `toggleUserStatus`  |
 
 ### 11.2 Routes and files
 
-| File                                                          | Purpose                                                       |
-|---------------------------------------------------------------|---------------------------------------------------------------|
-| `src/app/(app)/admin/users/page.tsx`                          | Server component: reads + renders user list with filters      |
-| `src/app/(app)/admin/users/_actions.ts`                       | Server Actions for create / update (name + role) / toggle status |
-| `src/app/(app)/admin/users/_components/UserTable.tsx`         | Client wrapper for filter UI (passes through to URL params)   |
-| `src/app/(app)/admin/users/_components/AddUserModal.tsx`      | Client modal; uses `useFormState` for inline errors           |
-| `src/app/(app)/admin/users/_components/EditUserModal.tsx`     | Client modal for editing name and role                        |
-| `src/app/(app)/admin/users/_components/ToggleStatusButton.tsx`| Client component with confirm dialog                          |
-| `src/lib/permissions.ts`                                      | `canAccess(role, route)` helper + invariant guards            |
+| File                                                          | Purpose                                                           |
+|---------------------------------------------------------------|-------------------------------------------------------------------|
+| `src/app/(app)/admin/users/page.tsx`                          | Server component: reads + renders user list with filters          |
+| `src/app/(app)/admin/users/_actions.ts`                       | Server Actions for create / update (name + email + role) / toggle status |
+| `src/app/(app)/admin/users/_components/UserTable.tsx`         | Client wrapper; manages add/edit inline form view switching       |
+| `src/app/(app)/admin/users/_components/AddUserForm.tsx`       | Inline full-page form; handles both Add and Edit modes            |
+| `src/app/(app)/admin/users/_components/ToggleStatusButton.tsx`| Row action with confirm dialog                                    |
+| `src/lib/permissions.ts`                                      | `canAccess(role, route)` helper + invariant guards                |
 
 ### 11.3 Access control — defense in depth
 
@@ -595,20 +594,24 @@ async function assertNotLastActiveAdmin(excludeUserId: string) {
 
 Hard rules — enforced in Server Actions, surfaced as inline form errors:
 
-1. **Email format and domain** — must match `growthops.asia` or `aaico.com`. Same allowlist as the login validator.
-2. **Email uniqueness** — DB unique constraint on `user.email` is the source of truth; the Server Action pre-checks for a friendlier error message.
-3. **Role values** — exactly one of `admin` / `finance` / `employee`.
-4. **Status defaults to `active`** on create.
-5. **No hard deletes** — only Active ↔ Inactive toggle (UI spec section 10).
-6. **At least one active Admin must remain.** Prevents lockout. Applies to both demoting the sole Admin and deactivating them. Surfaces as a clear error: *"At least one active Admin must remain in the system."*
-7. **`createdBy` is set automatically** from the session (`admin.id`), not from the form. Never trust the client for this.
+1. **Email format and domain** — must match `growthops.asia` or `aaico.com`. Same allowlist as the login validator. Enforced on both create and edit.
+2. **Email uniqueness** — DB unique constraint on `user.email` is the source of truth; the Server Action pre-checks for a friendlier error message. On edit, the check excludes the user being edited (saving the same email is fine). Error: *"This email is already in use by another user."*
+3. **Email is editable by Admins.** When an admin changes a user's email, two side-effects occur atomically:
+   - The user's Better Auth `account` row is deleted (severs the old Google SSO link).
+   - All active `session` rows for that user are deleted (immediately signs them out).
+   The affected user must re-authenticate with their new Google account on next visit.
+4. **Role values** — exactly one of `admin` / `finance` / `employee`.
+5. **Status defaults to `active`** on create.
+6. **No hard deletes** — only Active ↔ Inactive toggle (UI spec section 10).
+7. **At least one active Admin must remain.** Prevents lockout. Applies to both demoting the sole Admin and deactivating them. Surfaces as a clear error: *"At least one active Admin must remain in the system."*
+8. **`createdBy` is set automatically** from the session (`admin.id`), not from the form. Never trust the client for this.
 
 **Race-condition note (low priority):** two Admins could in theory pass the "not last admin" check simultaneously and both deactivate themselves, leaving none. The window is tiny (sub-second) and recovery is easy (re-run the seed script). If you want to close it, wrap the check + update in a `SERIALIZABLE` transaction or use `SELECT ... FOR UPDATE`. Not worth it for Phase 1.
 
 ### 11.7 UX details (matching the mock)
 
-- **Add User modal** — fields per UI spec section 7.2: Name, Email, Role. Submit button stays disabled until all three are populated. Submitting calls `createUser` via `useFormState`; errors show inline; success closes the modal and the new row appears (revalidated server-side).
-- **Edit User modal** — opened by the pencil icon. Pre-populates with the user's current name and role. Both fields are editable. Saving calls `updateUser`.
+- **Add User form** — full-page inline form (no modal). Fields: Name, Email, Role. Submitting calls `createUser`; errors show inline; success returns to the list (revalidated server-side).
+- **Edit User form** — same inline form, pre-populated with the user's current name, email, and role. All three fields are editable. Saving calls `updateUser`. If the email changed, the user is immediately signed out server-side (account + session rows deleted).
 - **Toggle Status** — a separate row action with a confirm dialog: *"Deactivate Lee Wei Ming? They will be unable to sign in to the portal."* Confirming calls `toggleUserStatus`. Re-activating doesn't need a confirm.
 - **Search and filters** — wire to URL search params via a small client component that uses `useRouter().replace()` on debounced input.
 - **Empty state** — when the user table is empty (only the seeded Admin remains), show the friendly empty state from UI spec section 9.
@@ -739,14 +742,18 @@ Manual end-to-end (User Management):
 13. ✅ Admin clicks Add User → modal opens → submits with valid `@growthops.asia` email + role → new row appears in the table.
 14. ❌ Admin tries to add user with `@gmail.com` email → inline form error: domain not allowed.
 15. ❌ Admin tries to add user with an existing email → inline form error: already exists.
-16. ✅ Admin edits another user's role → reflected on next page load.
-17. ❌ Sole Admin tries to demote themselves → error: "At least one active Admin must remain."
-18. ❌ Sole Admin tries to deactivate themselves → same error.
-19. ✅ Two Admins exist → either one can demote or deactivate themselves; the other remains.
-20. ✅ Admin deactivates a Finance user → that user's next session refresh blocks them.
-21. ✅ Admin re-activates an Inactive user → no confirm dialog → they can sign in again.
-22. ✅ Newly-added user can sign in via Google immediately (no email invite step, no waiting period).
-23. ✅ Search by name, email; filter by role and status — URL updates, results refetch server-side.
+16. ✅ Admin edits another user's name and role → reflected on next page load.
+17. ✅ Admin edits a user's email to a new valid allowed-domain address → email updates, user's account + session rows deleted, affected user is signed out immediately.
+18. ❌ Admin edits a user's email to one already in use by another user → inline error: "This email is already in use by another user."
+19. ❌ Admin edits a user's email to a non-allowed domain (e.g. @gmail.com) → inline error: domain not allowed.
+20. ✅ Admin edits their own email → signed out immediately, must re-login with new Google account.
+21. ❌ Sole Admin tries to demote themselves → error: "At least one active Admin must remain."
+22. ❌ Sole Admin tries to deactivate themselves → same error.
+23. ✅ Two Admins exist → either one can demote or deactivate themselves; the other remains.
+24. ✅ Admin deactivates a Finance user → that user's next session refresh blocks them.
+25. ✅ Admin re-activates an Inactive user → no confirm dialog → they can sign in again.
+26. ✅ Newly-added user can sign in via Google immediately (no email invite step, no waiting period).
+27. ✅ Search by name, email; filter by role and status — URL updates, results refetch server-side.
 
 Unit / integration:
 

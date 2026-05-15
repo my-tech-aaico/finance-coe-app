@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { eq, and, ne } from "drizzle-orm";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
-import { user } from "@/db/schema";
+import { user, session, account } from "@/db/schema";
 import { generateId } from "better-auth";
 
 const ALLOWED = new Set(
@@ -62,6 +62,14 @@ export async function createUser(_prev: ActionResult, formData: FormData): Promi
 const UpdateUserInput = z.object({
   userId: z.string(),
   name: z.string().trim().min(1, "Name is required").max(120),
+  email: z
+    .string()
+    .email("Invalid email address")
+    .transform((e) => e.toLowerCase())
+    .refine(
+      (e) => ALLOWED.has(e.split("@")[1] ?? ""),
+      "Email must be from an allowed company domain."
+    ),
   role: ROLE,
 });
 
@@ -75,9 +83,25 @@ export async function updateUser(_prev: ActionResult, formData: FormData): Promi
     if (check) return { error: check };
   }
 
+  const emailChanged = await (async () => {
+    const existing = await db.query.user.findFirst({ where: eq(user.id, parsed.data.userId) });
+    return existing?.email !== parsed.data.email;
+  })();
+
+  if (emailChanged) {
+    const dup = await db.query.user.findFirst({
+      where: and(eq(user.email, parsed.data.email), ne(user.id, parsed.data.userId)),
+    });
+    if (dup) return { error: "This email is already in use by another user." };
+
+    // Sever the old Google identity link and invalidate all active sessions.
+    await db.delete(account).where(eq(account.userId, parsed.data.userId));
+    await db.delete(session).where(eq(session.userId, parsed.data.userId));
+  }
+
   await db
     .update(user)
-    .set({ name: parsed.data.name, role: parsed.data.role, updatedAt: new Date() })
+    .set({ name: parsed.data.name, email: parsed.data.email, role: parsed.data.role, updatedAt: new Date() })
     .where(eq(user.id, parsed.data.userId));
 
   revalidatePath("/admin/users");
