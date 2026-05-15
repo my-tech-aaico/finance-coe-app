@@ -14,7 +14,8 @@
       "Bash(DATABASE_URL=\"postgresql://admin:admin%40110286@127.0.0.1:5432/postgres\" pnpm exec *)",
       "Bash(npx tsc *)",
       "Bash(grep -v \"ExperimentalWarning\\\\|CommonJS module\\\\|require\\(\\)\\\\|warn Unknown\\\\|Support for loading\\\\|Use \\\\`node\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\('node engines:', p.get\\('engines',{}\\)\\); print\\('scripts:', list\\(p.get\\('scripts',{}\\).keys\\(\\)\\)\\)\")"
     ]
   }
 }

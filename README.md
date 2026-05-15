@@ -1,73 +1,116 @@
-# React + TypeScript + Vite
+# COE Finance Claims Portal
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+An internal finance portal for managing claims across legal entities. Built with Next.js App Router, Better Auth (Google SSO), Drizzle ORM, and PostgreSQL.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Prerequisites
 
-## React Compiler
+Ensure the following are installed before getting started:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| Tool | Version | Notes |
+|------|---------|-------|
+| [Node.js](https://nodejs.org/) | v20+ | |
+| [pnpm](https://pnpm.io/) | v9+ | `npm install -g pnpm` |
+| [Docker](https://www.docker.com/) | Any recent version | For running PostgreSQL locally |
+| A Google Cloud project | — | OAuth 2.0 credentials required (see below) |
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 1. Start PostgreSQL with Docker
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+docker run -d \
+  --name finance-coe-db \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=yourpassword \
+  -e POSTGRES_DB=postgres \
+  -p 5432:5432 \
+  postgres:16
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+To stop and remove the container:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+docker stop finance-coe-db && docker rm finance-coe-db
 ```
+
+---
+
+## 2. Configure Environment Variables
+
+Copy the example below into a `.env.local` file at the project root:
+
+```bash
+# Database
+DATABASE_URL=postgresql://admin:yourpassword@127.0.0.1:5432/postgres
+
+# Better Auth
+BETTER_AUTH_SECRET=        # generate with: openssl rand -base64 32
+BETTER_AUTH_URL=http://localhost:3000
+NEXT_PUBLIC_BETTER_AUTH_URL=http://localhost:3000
+
+# Google OAuth (from Google Cloud Console)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Access control — comma-separated allowed email domains
+ALLOWED_EMAIL_DOMAIN=yourcompany.com
+
+# Comma-separated emails that are bootstrapped as Admin on first login
+BOOTSTRAP_ADMIN_EMAILS=admin@yourcompany.com
+```
+
+### Getting Google OAuth credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials.
+2. Create an **OAuth 2.0 Client ID** (Application type: Web application).
+3. Add `http://localhost:3000/api/auth/callback/google` to **Authorised redirect URIs**.
+4. Copy the Client ID and Client Secret into `.env.local`.
+
+---
+
+## 3. Run the Application Locally
+
+### Install dependencies
+
+```bash
+pnpm install
+```
+
+### Run database migrations
+
+```bash
+pnpm db:migrate
+```
+
+### Start the development server
+
+```bash
+pnpm dev
+```
+
+The app will be available at [http://localhost:3000](http://localhost:3000).
+
+---
+
+## Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start the development server with hot reload |
+| `pnpm build` | Build for production |
+| `pnpm start` | Start the production server |
+| `pnpm lint` | Run ESLint |
+| `pnpm db:generate` | Generate a new Drizzle migration from schema changes |
+| `pnpm db:migrate` | Apply pending migrations to the database |
+| `pnpm db:seed` | Seed the database (bootstrap admin users) |
+
+---
+
+## First-time Setup
+
+1. Start the app and navigate to [http://localhost:3000](http://localhost:3000).
+2. Sign in with a Google account whose email matches `BOOTSTRAP_ADMIN_EMAILS` — this account is automatically granted the Admin role.
+3. Go to **Admin → Entities** and create your legal entities (e.g. `apd-my`, `apd-sg`).
+4. Go to **Admin → User Management** and add users for your organisation.
