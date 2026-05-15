@@ -1,0 +1,1 @@
+CREATE INDEX "entity_status_idx" ON "entity" USING btree ("status");

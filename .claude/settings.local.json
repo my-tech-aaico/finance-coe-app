@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm add *)",
+      "Bash(pnpm exec *)",
+      "Bash(pnpm build *)",
+      "Bash(timeout 10 pnpm dev)",
+      "Bash(psql *)",
+      "Bash(DATABASE_URL=\"postgresql://admin:admin%40333@127.0.0.1:5432/finance_db\" pnpm exec)",
+      "Bash(DATABASE_URL=\"postgresql://admin:admin%40333@127.0.0.1:5432/finance_db\" pnpm exec *)",
+      "Bash(i just updated the env file, please re-read it)",
+      "Bash(read db connection again)",
+      "Bash(node *)",
+      "Bash(DATABASE_URL=\"postgresql://admin:admin%40110286@127.0.0.1:5432/postgres\" pnpm exec *)",
+      "Bash(npx tsc *)",
+      "Bash(grep -v \"ExperimentalWarning\\\\|CommonJS module\\\\|require\\(\\)\\\\|warn Unknown\\\\|Support for loading\\\\|Use \\\\`node\")",
+      "Bash(npm run *)"
+    ]
+  }
+}

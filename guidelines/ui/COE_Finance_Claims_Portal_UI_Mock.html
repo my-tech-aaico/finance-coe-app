@@ -1,0 +1,1893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>COE Finance Claims Portal — UI Mock</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'sans-serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      colors: {
+        brand: {
+          50: '#f0f4ff',
+          100: '#dbe4ff',
+          200: '#bac8ff',
+          300: '#91a7ff',
+          400: '#748ffc',
+          500: '#5c7cfa',
+          600: '#4c6ef5',
+          700: '#4263eb',
+          800: '#3b5bdb',
+          900: '#364fc7',
+          950: '#1e3a5f',
+        },
+        surface: {
+          0: '#ffffff',
+          50: '#f8f9fc',
+          100: '#f1f3f7',
+          200: '#e4e7ed',
+          300: '#d1d5de',
+          400: '#a1a8b8',
+          500: '#6b7280',
+          600: '#4b5563',
+          700: '#374151',
+          800: '#1f2937',
+          900: '#111827',
+        },
+        status: {
+          awaiting: '#f59e0b',
+          awaitingBg: '#fffbeb',
+          attached: '#10b981',
+          attachedBg: '#ecfdf5',
+          pending: '#6366f1',
+          pendingBg: '#eef2ff',
+          inprogress: '#3b82f6',
+          inprogressBg: '#eff6ff',
+          success: '#10b981',
+          successBg: '#ecfdf5',
+          failed: '#ef4444',
+          failedBg: '#fef2f2',
+          active: '#10b981',
+          activeBg: '#ecfdf5',
+          inactive: '#9ca3af',
+          inactiveBg: '#f3f4f6',
+        }
+      }
+    }
+  }
+}
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; transition: background-color 0.2s ease, color 0.2s ease; }
+
+  /* ===== DARK MODE ===== */
+  html.dark body { background: #0f1419 !important; color: #e4e7ed !important; }
+
+  /* Surfaces */
+  html.dark .bg-white { background: #1a2030 !important; }
+  html.dark .bg-surface-50 { background: #0f1419 !important; }
+  html.dark .bg-surface-100 { background: #232a3d !important; }
+  html.dark .bg-white\/80 { background: rgba(26, 32, 48, 0.8) !important; }
+
+  /* Borders */
+  html.dark .border-surface-100 { border-color: #232a3d !important; }
+  html.dark .border-surface-200 { border-color: #2a3145 !important; }
+  html.dark .border-surface-300 { border-color: #3a4258 !important; }
+  html.dark .divide-surface-100 > * + * { border-color: #232a3d !important; }
+  html.dark .divide-surface-200 > * + * { border-color: #2a3145 !important; }
+
+  /* Text */
+  html.dark .text-surface-900 { color: #e4e7ed !important; }
+  html.dark .text-surface-800 { color: #d1d5de !important; }
+  html.dark .text-surface-700 { color: #b8bdcc !important; }
+  html.dark .text-surface-600 { color: #9ca3b3 !important; }
+  html.dark .text-surface-500 { color: #8b92a5 !important; }
+  html.dark .text-surface-400 { color: #6b7290 !important; }
+  html.dark .text-surface-300 { color: #4a5168 !important; }
+
+  /* Inputs */
+  html.dark .input-field {
+    background: #232a3d !important; color: #e4e7ed !important; border-color: #2a3145 !important;
+  }
+  html.dark .input-field:focus { border-color: #5c7cfa !important; box-shadow: 0 0 0 3px rgba(92,124,250,0.15) !important; }
+  html.dark .input-label { color: #d1d5de !important; }
+  html.dark .input-field::placeholder { color: #6b7290 !important; }
+
+  /* Buttons */
+  html.dark .btn-secondary {
+    background: #232a3d !important; color: #d1d5de !important; border-color: #2a3145 !important;
+  }
+  html.dark .btn-secondary:hover { background: #2a3145 !important; border-color: #3a4258 !important; }
+  html.dark .btn-icon { background: #232a3d; border-color: #2a3145 !important; color: #9ca3b3; }
+  html.dark .btn-icon:hover { background: #2a3145; color: #d1d5de; }
+
+  /* Sidebar nav */
+  html.dark .nav-item:hover { background: rgba(92, 124, 250, 0.15) !important; }
+  html.dark .nav-item.active { background: rgba(92, 124, 250, 0.2) !important; color: #91a7ff !important; }
+
+  /* Tables */
+  html.dark .table-row:hover { background: #232a3d !important; }
+
+  /* Modal */
+  html.dark .modal-overlay { background: rgba(0, 0, 0, 0.6) !important; }
+
+  /* File drop */
+  html.dark .file-drop { border-color: #3a4258 !important; }
+  html.dark .file-drop:hover { border-color: #5c7cfa !important; background: rgba(92,124,250,0.05) !important; }
+
+  /* Brand bg variants used in cards/badges */
+  html.dark .bg-brand-50 { background: rgba(92, 124, 250, 0.12) !important; }
+  html.dark .bg-brand-100 { background: rgba(92, 124, 250, 0.18) !important; }
+  html.dark .text-brand-700 { color: #91a7ff !important; }
+  html.dark .text-brand-600 { color: #91a7ff !important; }
+
+  /* Status soft backgrounds — slightly muted in dark */
+  html.dark .bg-amber-50 { background: rgba(245, 158, 11, 0.12) !important; }
+  html.dark .bg-blue-50 { background: rgba(59, 130, 246, 0.12) !important; }
+  html.dark .bg-red-50 { background: rgba(239, 68, 68, 0.12) !important; }
+  html.dark .bg-emerald-50 { background: rgba(16, 185, 129, 0.12) !important; }
+  html.dark .bg-purple-50 { background: rgba(168, 85, 247, 0.15) !important; }
+  html.dark .bg-teal-50 { background: rgba(20, 184, 166, 0.15) !important; }
+  html.dark .bg-gray-100 { background: #2a3145 !important; }
+  html.dark .bg-emerald-100 { background: rgba(16, 185, 129, 0.18) !important; }
+  html.dark .bg-amber-100 { background: rgba(245, 158, 11, 0.18) !important; }
+  html.dark .bg-blue-100 { background: rgba(59, 130, 246, 0.18) !important; }
+  html.dark .bg-red-100 { background: rgba(239, 68, 68, 0.18) !important; }
+
+  /* Borders for amber/red surfaces (used in callouts) */
+  html.dark .border-amber-200 { border-color: rgba(245, 158, 11, 0.3) !important; }
+  html.dark .border-amber-100 { border-color: rgba(245, 158, 11, 0.2) !important; }
+  html.dark .border-red-200 { border-color: rgba(239, 68, 68, 0.3) !important; }
+  html.dark .border-red-100 { border-color: rgba(239, 68, 68, 0.2) !important; }
+  html.dark .border-emerald-200 { border-color: rgba(16, 185, 129, 0.3) !important; }
+  html.dark .text-amber-700 { color: #fbbf24 !important; }
+  html.dark .text-red-700 { color: #fca5a5 !important; }
+  html.dark .text-red-800 { color: #fca5a5 !important; }
+  html.dark .text-red-500 { color: #f87171 !important; }
+  html.dark .text-emerald-700 { color: #6ee7b7 !important; }
+  html.dark .text-emerald-800 { color: #6ee7b7 !important; }
+  html.dark .text-emerald-500 { color: #34d399 !important; }
+  html.dark .text-emerald-600 { color: #34d399 !important; }
+  html.dark .text-red-600 { color: #f87171 !important; }
+  html.dark .text-amber-600 { color: #fbbf24 !important; }
+  html.dark .text-purple-700 { color: #c4b5fd !important; }
+  html.dark .text-blue-700 { color: #93c5fd !important; }
+  html.dark .text-teal-700 { color: #5eead4 !important; }
+  html.dark .text-gray-500 { color: #9ca3b3 !important; }
+
+  /* Login screen gradient */
+  html.dark .from-brand-50 { --tw-gradient-from: #1a2030 !important; }
+  html.dark .via-white { --tw-gradient-via: #1a2030 !important; }
+  html.dark .to-surface-50 { --tw-gradient-to: #0f1419 !important; }
+
+  /* Shadows soften in dark */
+  html.dark .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0,0,0,0.3) !important; }
+  html.dark .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.4) !important; }
+  html.dark .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5) !important; }
+  html.dark .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6) !important; }
+
+  /* Scrollbar */
+  html.dark ::-webkit-scrollbar-thumb { background: #3a4258 !important; }
+  html.dark ::-webkit-scrollbar-thumb:hover { background: #4a5168 !important; }
+
+  .nav-item { transition: all 0.15s ease; }
+  .nav-item:hover { background: rgba(92, 124, 250, 0.08); }
+  .nav-item.active { background: rgba(92, 124, 250, 0.12); color: #4263eb; font-weight: 600; }
+
+  .sidebar { transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); overflow: hidden; }
+
+  /* ===== MOBILE STYLES (< 1024px) ===== */
+  @media (max-width: 1023px) {
+    .sidebar {
+      transform: translateX(-100%);
+      width: 280px !important;
+    }
+    .sidebar.mobile-open { transform: translateX(0); }
+    #main-wrapper { margin-left: 0 !important; }
+    main { padding: 12px !important; }
+
+    /* Header tightens */
+    header { padding-left: 12px !important; padding-right: 12px !important; }
+    #page-title { font-size: 15px !important; }
+
+    /* Avatar greeting hidden */
+    .user-info { display: none !important; }
+
+    /* All cards and form elements tighten padding */
+    .responsive-card { padding: 16px !important; }
+
+    /* Tables: smaller font and reduced cell padding */
+    table { font-size: 13px !important; }
+    table th, table td { padding: 10px 12px !important; }
+    table th:first-child, table td:first-child { padding-left: 14px !important; }
+    table th:last-child, table td:last-child { padding-right: 14px !important; }
+
+    /* Card and form padding consistency */
+    .card-padding-mobile { padding: 16px !important; }
+
+    /* Detail card cells stack to single column */
+    .detail-grid { grid-template-columns: 1fr !important; }
+    .detail-grid > div { border-right: 0 !important; }
+
+    /* Floating button doesn't overlap content */
+    body { padding-bottom: 60px; }
+
+    /* Page headers stack neatly */
+    .page-header {
+      flex-direction: column !important;
+      align-items: stretch !important;
+      gap: 12px !important;
+    }
+    .page-header > button,
+    .page-header > .header-actions {
+      width: 100% !important;
+    }
+
+    /* Modal full-width on mobile */
+    .modal-content { margin: 12px !important; max-width: calc(100vw - 24px) !important; }
+  }
+
+  /* ===== DESKTOP STYLES (>= 1024px) ===== */
+  @media (min-width: 1024px) {
+    .sidebar { transform: translateX(0); }
+    #hamburger-btn { display: none !important; }
+  }
+
+  /* Mobile typography refinements */
+  @media (max-width: 639px) {
+    .text-3xl { font-size: 24px !important; line-height: 1.2 !important; }
+    .text-xl { font-size: 18px !important; }
+    h2.text-xl { font-size: 17px !important; }
+
+    /* Reduce summary card padding on tiny screens */
+    .summary-card { padding: 14px !important; }
+
+    /* Status badges shorter on mobile */
+    .badge { font-size: 11px !important; padding: 2px 8px !important; }
+  }
+
+  /* Sidebar overlay for mobile */
+  #sidebar-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+    z-index: 45; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+  }
+  #sidebar-overlay.show { opacity: 1; pointer-events: auto; }
+
+  .page { display: none; }
+  .page.active-page { display: block; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500;
+    line-height: 1.4;
+  }
+  .badge::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  .table-row { transition: background 0.1s ease; }
+  .table-row:hover { background: #f8f9fc; }
+
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+  .modal-content { transform: translateY(12px); transition: transform 0.25s cubic-bezier(0.4,0,0.2,1); }
+  .modal-overlay.show .modal-content { transform: translateY(0); }
+
+  .btn-primary {
+    background: #4263eb; color: white; border: none; padding: 10px 20px;
+    border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer;
+    transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: #3b5bdb; }
+
+  .btn-secondary {
+    background: white; color: #374151; border: 1px solid #e4e7ed; padding: 10px 20px;
+    border-radius: 8px; font-weight: 500; font-size: 14px; cursor: pointer;
+    transition: all 0.15s; display: inline-flex; align-items: center; gap: 8px;
+  }
+  .btn-secondary:hover { background: #f8f9fc; border-color: #d1d5de; }
+
+  .btn-icon {
+    background: none; border: 1px solid #e4e7ed; width: 36px; height: 36px;
+    border-radius: 8px; cursor: pointer; display: inline-flex;
+    align-items: center; justify-content: center; transition: all 0.15s; color: #6b7280;
+  }
+  .btn-icon:hover { background: #f1f3f7; color: #374151; }
+
+  .input-field {
+    width: 100%; padding: 10px 14px; border: 1px solid #e4e7ed; border-radius: 8px;
+    font-size: 14px; font-family: 'DM Sans', sans-serif; transition: border 0.15s;
+    outline: none; background: white; color: #1f2937;
+  }
+  .input-field:focus { border-color: #4263eb; box-shadow: 0 0 0 3px rgba(66,99,235,0.1); }
+
+  .input-label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in { animation: fadeInUp 0.4s cubic-bezier(0.4,0,0.2,1) both; }
+
+  .file-drop {
+    border: 2px dashed #d1d5de; border-radius: 12px; padding: 40px;
+    text-align: center; transition: all 0.2s; cursor: pointer;
+  }
+  .file-drop:hover { border-color: #4263eb; background: rgba(66,99,235,0.03); }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5de; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #a1a8b8; }
+</style>
+</head>
+<body class="bg-surface-50 text-surface-800 min-h-screen">
+
+<!-- ========== SIDEBAR ========== -->
+<aside id="sidebar" class="sidebar fixed top-0 left-0 h-full bg-white border-r border-surface-200 z-50 flex flex-col" style="width:256px;">
+  <!-- Logo -->
+  <div class="logo-area flex items-center gap-3 px-5 h-16 border-b border-surface-100 flex-shrink-0">
+    <div class="logo-icon w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
+      <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="logo-text font-bold text-lg text-surface-900 tracking-tight">COE Finance</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+    <!-- Dashboard -->
+    <button onclick="navigate('dashboard')" class="nav-item active w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm" data-page="dashboard" data-tooltip="Dashboard">
+      <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="9,22 9,12 15,12 15,22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="nav-label">Dashboard</span>
+    </button>
+
+    <!-- Claims Group -->
+    <div class="pt-3">
+      <button onclick="toggleGroup('claims')" class="group-toggle w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-surface-400 uppercase tracking-wider hover:text-surface-600 transition-colors">
+        <span class="nav-group-label">Claims</span>
+        <svg class="nav-chevron w-4 h-4 transition-transform" id="claims-chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="claims-group" class="space-y-0.5 mt-1">
+        <button onclick="navigate('receipts')" class="nav-item sub-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6" data-page="receipts" data-tooltip="Receipts">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="nav-label">Receipts</span>
+        </button>
+        <button onclick="navigate('statements')" class="nav-item sub-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6" data-page="statements" data-tooltip="Statements">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="nav-label">Statements</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Admin Group -->
+    <div class="pt-3">
+      <button onclick="toggleGroup('admin')" class="group-toggle w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-surface-400 uppercase tracking-wider hover:text-surface-600 transition-colors">
+        <span class="nav-group-label">Admin</span>
+        <svg class="nav-chevron w-4 h-4 transition-transform" id="admin-chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div id="admin-group" class="space-y-0.5 mt-1">
+        <button onclick="navigate('users')" class="nav-item sub-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6" data-page="users" data-tooltip="User Management">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M23 21v-2a4 4 0 00-3-3.87" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M16 3.13a4 4 0 010 7.75" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="nav-label">User Management</span>
+        </button>
+        <button onclick="navigate('entities')" class="nav-item sub-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6" data-page="entities" data-tooltip="Entity Configuration">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <span class="nav-label">Entities</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+</aside>
+
+<!-- ========== MAIN AREA ========== -->
+<!-- Sidebar overlay (mobile) -->
+<div id="sidebar-overlay" onclick="closeMobileSidebar()"></div>
+
+<div id="main-wrapper" class="transition-all duration-300" style="margin-left:256px;">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-surface-200 h-16 flex items-center justify-between px-4 sm:px-6">
+    <div class="flex items-center gap-3">
+      <button id="hamburger-btn" onclick="toggleMobileSidebar()" class="btn-icon !border-0 flex-shrink-0">
+        <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+      <h1 id="page-title" class="text-lg font-bold text-surface-900">Dashboard</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="user-info text-right mr-2">
+        <p class="text-sm font-semibold text-surface-800">Sarah Chen</p>
+        <p class="text-xs text-surface-400">Admin</p>
+      </div>
+      <button class="w-9 h-9 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-semibold text-sm">SC</button>
+      <button onclick="toggleTheme()" class="btn-icon" title="Toggle theme">
+        <svg id="theme-icon-sun" width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="1" x2="12" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="21" x2="12" y2="23" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="1" y1="12" x2="3" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="21" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg id="theme-icon-moon" width="18" height="18" fill="none" viewBox="0 0 24 24" style="display:none;"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn-icon" title="Logout">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="16,17 21,12 16,7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="21" y1="12" x2="9" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <main class="p-6 max-w-7xl mx-auto">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div id="page-dashboard" class="page active-page animate-in">
+
+      <!-- Role toggle for demo -->
+      <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+        <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider flex-shrink-0">Mock Preview:</span>
+        <div class="flex gap-2">
+          <button onclick="setDashboardRole('admin')" class="dash-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800" data-role="admin">Admin / Finance</button>
+          <button onclick="setDashboardRole('employee')" class="dash-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-white text-surface-600 border-surface-200 hover:bg-surface-50" data-role="employee">Employee</button>
+        </div>
+      </div>
+
+      <!-- ===== ADMIN / FINANCE DASHBOARD ===== -->
+      <div id="dash-admin">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Total Claims</p>
+              <div class="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-surface-900">24</p>
+            <p class="text-xs text-surface-400 mt-1">All time</p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Awaiting Statement</p>
+              <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-width="1.8"/><polyline points="12,6 12,12 16,14" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-amber-600">7</p>
+            <p class="text-xs text-surface-400 mt-1">Pending upload</p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Statements Uploaded</p>
+              <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-surface-900">17</p>
+            <p class="text-xs text-surface-400 mt-1">Total uploaded</p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Verification Failed</p>
+              <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#ef4444" stroke-width="1.8"/><line x1="15" y1="9" x2="9" y2="15" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-red-600">3</p>
+            <p class="text-xs text-surface-400 mt-1">Needs attention</p>
+          </div>
+        </div>
+
+        <!-- Two column layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-8">
+
+          <!-- Verification Status Breakdown -->
+          <div class="lg:col-span-2 bg-white rounded-xl border border-surface-200 shadow-sm">
+            <div class="px-6 py-4 border-b border-surface-100">
+              <h3 class="text-sm font-semibold text-surface-900">Verification Status</h3>
+            </div>
+            <div class="px-6 py-6">
+              <!-- Visual bar chart -->
+              <div class="space-y-4">
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-sm text-surface-600">Success</span>
+                    <span class="text-sm font-semibold text-surface-800">9</span>
+                  </div>
+                  <div class="w-full bg-surface-100 rounded-full h-3">
+                    <div class="bg-emerald-500 h-3 rounded-full" style="width:53%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-sm text-surface-600">In Progress</span>
+                    <span class="text-sm font-semibold text-surface-800">3</span>
+                  </div>
+                  <div class="w-full bg-surface-100 rounded-full h-3">
+                    <div class="bg-blue-500 h-3 rounded-full" style="width:18%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-sm text-surface-600">Pending Verification</span>
+                    <span class="text-sm font-semibold text-surface-800">2</span>
+                  </div>
+                  <div class="w-full bg-surface-100 rounded-full h-3">
+                    <div class="bg-indigo-400 h-3 rounded-full" style="width:12%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-sm text-surface-600">Queued</span>
+                    <span class="text-sm font-semibold text-surface-800">1</span>
+                  </div>
+                  <div class="w-full bg-surface-100 rounded-full h-3">
+                    <div class="h-3 rounded-full" style="width:6%;background:#8b5cf6;"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <span class="text-sm text-surface-600">Failed</span>
+                    <span class="text-sm font-semibold text-surface-800">3</span>
+                  </div>
+                  <div class="w-full bg-surface-100 rounded-full h-3">
+                    <div class="bg-red-500 h-3 rounded-full" style="width:18%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity Feed -->
+          <div class="lg:col-span-3 bg-white rounded-xl border border-surface-200 shadow-sm">
+            <div class="px-6 py-4 border-b border-surface-100">
+              <h3 class="text-sm font-semibold text-surface-900">Recent Activity</h3>
+            </div>
+            <div class="divide-y divide-surface-100">
+              <div class="px-6 py-3.5 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#ef4444" stroke-width="2"/><line x1="15" y1="9" x2="9" y2="15" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="9" x2="15" y2="15" stroke="#ef4444" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-surface-800">Verification <span class="font-semibold text-red-600">failed</span> for <span class="font-mono text-xs text-brand-700">CLM-005</span></p>
+                  <p class="text-xs text-surface-400 mt-0.5">Amount mismatch detected · Lee Wei Ming</p>
+                </div>
+                <span class="text-xs text-surface-400 flex-shrink-0">2h ago</span>
+              </div>
+              <div class="px-6 py-3.5 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-surface-800">Statement <span class="font-semibold">uploaded</span> for <span class="font-mono text-xs text-brand-700">CLM-004</span></p>
+                  <p class="text-xs text-surface-400 mt-0.5">Siti Aminah · Team lunch</p>
+                </div>
+                <span class="text-xs text-surface-400 flex-shrink-0">4h ago</span>
+              </div>
+              <div class="px-6 py-3.5 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,4 12,14.01 9,11.01" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-surface-800">Verification <span class="font-semibold text-emerald-600">successful</span> for <span class="font-mono text-xs text-brand-700">CLM-002</span></p>
+                  <p class="text-xs text-surface-400 mt-0.5">Nurul Huda · Office supplies</p>
+                </div>
+                <span class="text-xs text-surface-400 flex-shrink-0">6h ago</span>
+              </div>
+              <div class="px-6 py-3.5 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="#4263eb" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="#4263eb" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-surface-800">New claim <span class="font-semibold">created</span> — <span class="font-mono text-xs text-brand-700">CLM-008</span></p>
+                  <p class="text-xs text-surface-400 mt-0.5">Ahmad Razak · Hotel accommodation</p>
+                </div>
+                <span class="text-xs text-surface-400 flex-shrink-0">1d ago</span>
+              </div>
+              <div class="px-6 py-3.5 flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,4 12,14.01 9,11.01" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm text-surface-800">Verification <span class="font-semibold text-emerald-600">successful</span> for <span class="font-mono text-xs text-brand-700">CLM-007</span></p>
+                  <p class="text-xs text-surface-400 mt-0.5">Sarah Chen · Conference flights</p>
+                </div>
+                <span class="text-xs text-surface-400 flex-shrink-0">1d ago</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Claims Needing Attention -->
+        <div class="bg-white rounded-xl border border-surface-200 shadow-sm">
+          <div class="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-surface-900">Claims Needing Attention</h3>
+            <span class="badge" style="background:#fef2f2;color:#b91c1c;">3 items</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3 font-semibold">Claim</th>
+                  <th class="text-left px-5 py-3 font-semibold">Claimant</th>
+                  <th class="text-left px-5 py-3 font-semibold">Issue</th>
+                  <th class="text-left px-5 py-3 font-semibold">Since</th>
+                  <th class="text-right px-5 py-3 font-semibold">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-3.5"><span class="font-mono text-xs text-brand-700 font-medium">CLM-005</span> <span class="text-surface-400 text-xs">· Software license</span></td>
+                  <td class="px-5 py-3.5 text-surface-600">Lee Wei Ming</td>
+                  <td class="px-5 py-3.5"><span class="badge" style="background:#fef2f2;color:#b91c1c;">Verification Failed</span></td>
+                  <td class="px-5 py-3.5 text-surface-400">2 hours ago</td>
+                  <td class="px-5 py-3.5 text-right"><button class="btn-secondary text-xs !py-1.5 !px-3">View Details</button></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-3.5"><span class="font-mono text-xs text-brand-700 font-medium">CLM-001</span> <span class="text-surface-400 text-xs">· Client dinner</span></td>
+                  <td class="px-5 py-3.5 text-surface-600">Ahmad Razak</td>
+                  <td class="px-5 py-3.5"><span class="badge" style="background:#fffbeb;color:#b45309;">Awaiting Statement — 14 days</span></td>
+                  <td class="px-5 py-3.5 text-surface-400">28 Apr 2026</td>
+                  <td class="px-5 py-3.5 text-right"><button class="btn-secondary text-xs !py-1.5 !px-3">View Claim</button></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-3.5"><span class="font-mono text-xs text-brand-700 font-medium">CLM-003</span> <span class="text-surface-400 text-xs">· Travel — KL to Penang</span></td>
+                  <td class="px-5 py-3.5 text-surface-600">Lee Wei Ming</td>
+                  <td class="px-5 py-3.5"><span class="badge" style="background:#fef2f2;color:#b91c1c;">Verification Failed</span></td>
+                  <td class="px-5 py-3.5 text-surface-400">1 day ago</td>
+                  <td class="px-5 py-3.5 text-right"><button class="btn-secondary text-xs !py-1.5 !px-3">View Details</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== EMPLOYEE DASHBOARD ===== -->
+      <div id="dash-employee" class="hidden">
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">My Claims</p>
+              <div class="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-surface-900">5</p>
+            <p class="text-xs text-surface-400 mt-1">Assigned to me</p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Awaiting My Statement</p>
+              <div class="w-9 h-9 rounded-lg bg-amber-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#f59e0b" stroke-width="1.8"/><polyline points="12,6 12,12 16,14" stroke="#f59e0b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-amber-600">2</p>
+            <p class="text-xs text-surface-400 mt-1">Action needed</p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">In Progress</p>
+              <div class="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="#3b82f6" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-surface-900">1</p>
+            <p class="text-xs text-surface-400 mt-1">Being verified</p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider">Completed</p>
+              <div class="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
+                <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="22,4 12,14.01 9,11.01" stroke="#10b981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <p class="text-3xl font-bold text-emerald-600">2</p>
+            <p class="text-xs text-surface-400 mt-1">Success + Failed</p>
+          </div>
+        </div>
+
+        <!-- Two widgets -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- My Pending Actions -->
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm">
+            <div class="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-surface-900">My Pending Actions</h3>
+              <span class="badge" style="background:#fffbeb;color:#b45309;">2 pending</span>
+            </div>
+            <div class="divide-y divide-surface-100">
+              <div class="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p class="text-sm font-medium text-surface-800"><span class="font-mono text-xs text-brand-700">CLM-009</span> — Parking charges — May</p>
+                  <p class="text-xs text-surface-400 mt-1">Created 10 May 2026 · Awaiting your statement</p>
+                </div>
+                <button onclick="navigate('statements')" class="btn-primary text-xs !py-2 !px-3 flex-shrink-0">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Upload
+                </button>
+              </div>
+              <div class="px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <p class="text-sm font-medium text-surface-800"><span class="font-mono text-xs text-brand-700">CLM-011</span> — Team building dinner</p>
+                  <p class="text-xs text-surface-400 mt-1">Created 8 May 2026 · Awaiting your statement</p>
+                </div>
+                <button onclick="navigate('statements')" class="btn-primary text-xs !py-2 !px-3 flex-shrink-0">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  Upload
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Recent Statements -->
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm">
+            <div class="px-6 py-4 border-b border-surface-100">
+              <h3 class="text-sm font-semibold text-surface-900">My Recent Statements</h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                    <th class="text-left px-5 py-2.5 font-semibold">Claim</th>
+                    <th class="text-left px-5 py-2.5 font-semibold">Uploaded</th>
+                    <th class="text-left px-5 py-2.5 font-semibold">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-surface-100">
+                  <tr class="table-row">
+                    <td class="px-5 py-3"><span class="font-mono text-xs text-brand-700">CLM-006</span> <span class="text-surface-400 text-xs">· Taxi receipts</span></td>
+                    <td class="px-5 py-3 text-surface-400">11 May 2026</td>
+                    <td class="px-5 py-3"><span class="badge" style="background:#eef2ff;color:#4338ca;">Pending Verification</span></td>
+                  </tr>
+                  <tr class="table-row">
+                    <td class="px-5 py-3"><span class="font-mono text-xs text-brand-700">CLM-004</span> <span class="text-surface-400 text-xs">· Office supplies</span></td>
+                    <td class="px-5 py-3 text-surface-400">8 May 2026</td>
+                    <td class="px-5 py-3"><span class="badge" style="background:#eff6ff;color:#1d4ed8;">In Progress</span></td>
+                  </tr>
+                  <tr class="table-row">
+                    <td class="px-5 py-3"><span class="font-mono text-xs text-brand-700">CLM-002</span> <span class="text-surface-400 text-xs">· Client lunch</span></td>
+                    <td class="px-5 py-3 text-surface-400">3 May 2026</td>
+                    <td class="px-5 py-3"><span class="badge" style="background:#ecfdf5;color:#047857;">Success</span></td>
+                  </tr>
+                  <tr class="table-row">
+                    <td class="px-5 py-3"><span class="font-mono text-xs text-brand-700">CLM-001</span> <span class="text-surface-400 text-xs">· Flight tickets</span></td>
+                    <td class="px-5 py-3 text-surface-400">28 Apr 2026</td>
+                    <td class="px-5 py-3"><span class="badge" style="background:#fef2f2;color:#b91c1c;">Failed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== RECEIPTS ===== -->
+    <div id="page-receipts" class="page">
+      <!-- Receipts: List View -->
+      <div id="receipts-list" class="animate-in">
+        <!-- Top bar -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-surface-900">Claims</h2>
+            <p class="text-sm text-surface-400 mt-0.5">Manage claim line items and receipt folders</p>
+          </div>
+          <button onclick="showReceiptsForm()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            New Claim
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+          <div class="relative flex-1 w-full lg:max-w-sm">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search claims..." class="input-field pl-9 w-full">
+          </div>
+          <select class="input-field w-full lg:w-auto lg:min-w-[180px]">
+            <option>All Statuses</option>
+            <option>Awaiting Statement</option>
+            <option>Statement Attached</option>
+          </select>
+          <select class="input-field w-full lg:w-auto lg:min-w-[160px]">
+            <option>All Claimants</option>
+            <option>Unassigned</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3.5 font-semibold">Claim ID</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Description</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Period</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Entity</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Claimant</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Status</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Created</th>
+                  <th class="text-center px-5 py-3.5 font-semibold">Drive</th>
+                  <th class="text-center px-3 py-3.5 font-semibold">Edit</th>
+                  <th class="text-center px-3 py-3.5 font-semibold">Statement</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2605-CLM-001</td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Claim for the month of May 2026</td>
+                  <td class="px-5 py-4 text-surface-600 whitespace-nowrap">May 2026</td>
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-my</span></td>
+                  <td class="px-5 py-4"><span class="text-surface-400 italic">Unassigned</span></td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#fffbeb;color:#b45309;"><style>.badge[style*='fffbeb']::before{background:#f59e0b;}</style>Awaiting Statement</span></td>
+                  <td class="px-5 py-4 text-surface-400 whitespace-nowrap">12 May 2026</td>
+                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2605-CLM-002</td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Claim for the month of May 2026</td>
+                  <td class="px-5 py-4 text-surface-600 whitespace-nowrap">May 2026</td>
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-sg</span></td>
+                  <td class="px-5 py-4 text-surface-600">Nurul Huda</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;"><style>.badge[style*='ecfdf5']::before{background:#10b981;}</style>Statement Attached</span></td>
+                  <td class="px-5 py-4 text-surface-400 whitespace-nowrap">10 May 2026</td>
+                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="View Statement"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2604-CLM-003</td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Claim for the month of April 2026</td>
+                  <td class="px-5 py-4 text-surface-600 whitespace-nowrap">Apr 2026</td>
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-hk</span></td>
+                  <td class="px-5 py-4 text-surface-600">Lee Wei Ming</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#fffbeb;color:#b45309;">Awaiting Statement</span></td>
+                  <td class="px-5 py-4 text-surface-400 whitespace-nowrap">8 May 2026</td>
+                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2604-CLM-004</td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Claim for the month of April 2026</td>
+                  <td class="px-5 py-4 text-surface-600 whitespace-nowrap">Apr 2026</td>
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-my</span></td>
+                  <td class="px-5 py-4 text-surface-600">Siti Aminah</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Statement Attached</span></td>
+                  <td class="px-5 py-4 text-surface-400 whitespace-nowrap">5 May 2026</td>
+                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="View Statement"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipts: Create Claim Form -->
+      <div id="receipts-form" class="hidden animate-in">
+        <button onclick="hideReceiptsForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Claims
+        </button>
+        <div class="max-w-lg">
+          <h2 class="text-xl font-bold text-surface-900 mb-1">New Claim</h2>
+          <p class="text-sm text-surface-400 mb-8">Create a new claim line item. A Google Drive folder will be generated automatically.</p>
+
+          <div class="space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="input-label">Claim Month <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+                <select class="input-field">
+                  <option value="" disabled>Select month...</option>
+                  <option>January</option>
+                  <option>February</option>
+                  <option>March</option>
+                  <option>April</option>
+                  <option selected>May</option>
+                  <option>June</option>
+                  <option>July</option>
+                  <option>August</option>
+                  <option>September</option>
+                  <option>October</option>
+                  <option>November</option>
+                  <option>December</option>
+                </select>
+              </div>
+              <div>
+                <label class="input-label">Claim Year <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+                <select class="input-field">
+                  <option>2024</option>
+                  <option>2025</option>
+                  <option selected>2026</option>
+                  <option>2027</option>
+                  <option>2028</option>
+                  <option>2029</option>
+                  <option>2030</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="input-label">Entity <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <select class="input-field">
+                <option value="" disabled selected>Select entity...</option>
+                <option>apd-my</option>
+                <option>apd-sg</option>
+                <option>apd-hk</option>
+              </select>
+              <p class="text-xs text-surface-400 mt-1.5">The legal entity this claim belongs to.</p>
+            </div>
+            <div>
+              <label class="input-label">Description <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <textarea class="input-field" rows="3" placeholder="Claim for the month of..."></textarea>
+            </div>
+            <div>
+              <label class="input-label">Claimant <span class="text-surface-400 font-normal">(optional)</span></label>
+              <select class="input-field">
+                <option value="" selected>Leave unassigned for now</option>
+                <option>Ahmad Razak</option>
+                <option>Nurul Huda</option>
+                <option>Lee Wei Ming</option>
+                <option>Siti Aminah</option>
+              </select>
+              <p class="text-xs text-surface-400 mt-1.5">You can assign a claimant later once receipts have been collected.</p>
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button class="btn-primary">Create Claim</button>
+            <button onclick="hideReceiptsForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipts: Empty State -->
+      <div id="receipts-empty" class="hidden animate-in">
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+          <div class="w-20 h-20 rounded-2xl bg-brand-50 flex items-center justify-center mb-6">
+            <svg width="36" height="36" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="11" x2="12" y2="17" stroke="#91a7ff" stroke-width="1.8" stroke-linecap="round"/><line x1="9" y1="14" x2="15" y2="14" stroke="#91a7ff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-surface-900 mb-2">No claims yet</h3>
+          <p class="text-surface-400 max-w-sm mb-6">Create your first claim to generate a receipt folder and start the verification process.</p>
+          <button onclick="showReceiptsForm()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Create First Claim
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== STATEMENTS ===== -->
+    <div id="page-statements" class="page">
+      <!-- Statements: List View -->
+      <div id="statements-list" class="animate-in">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-surface-900">Statements</h2>
+            <p class="text-sm text-surface-400 mt-0.5">Upload and manage credit card statements</p>
+          </div>
+          <button onclick="showStatementsForm()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Upload Statement
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+          <div class="relative flex-1 w-full lg:max-w-sm">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search statements..." class="input-field pl-9 w-full">
+          </div>
+          <select class="input-field w-full lg:w-auto lg:min-w-[200px]">
+            <option>All Verification Statuses</option>
+            <option>Pending Verification</option>
+            <option>Queued</option>
+            <option>In Progress</option>
+            <option>Success</option>
+            <option>Failed</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3.5 font-semibold">Statement ID</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Statement Date</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Linked Claim</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Upload Date</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Verification</th>
+                  <th class="text-center px-5 py-3.5 font-semibold">Actions</th>
+                  <th class="text-center px-3 py-3.5 font-semibold">Start</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-001</td>
+                  <td class="px-5 py-4 text-surface-600">30 Apr 2026</td>
+                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-002</span> <span class="text-surface-400">· Office supplies</span></td>
+                  <td class="px-5 py-4 text-surface-400">10 May 2026</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Success</span></td>
+                  <td class="px-5 py-4 text-center">
+                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
+                  </td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-002</td>
+                  <td class="px-5 py-4 text-surface-600">30 Apr 2026</td>
+                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-004</span> <span class="text-surface-400">· Team lunch</span></td>
+                  <td class="px-5 py-4 text-surface-400">8 May 2026</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#eff6ff;color:#1d4ed8;"><style>.badge[style*='eff6ff']::before{background:#3b82f6;}</style>In Progress</span></td>
+                  <td class="px-5 py-4 text-center">
+                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
+                  </td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-003</td>
+                  <td class="px-5 py-4 text-surface-600">31 Mar 2026</td>
+                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-005</span> <span class="text-surface-400">· Software license renewal</span></td>
+                  <td class="px-5 py-4 text-surface-400">5 May 2026</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#fef2f2;color:#b91c1c;"><style>.badge[style*='fef2f2']::before{background:#ef4444;}</style>Failed</span></td>
+                  <td class="px-5 py-4 text-center">
+                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
+                  </td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-004</td>
+                  <td class="px-5 py-4 text-surface-600">30 Apr 2026</td>
+                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-006</span> <span class="text-surface-400">· Conference registration</span></td>
+                  <td class="px-5 py-4 text-surface-400">3 May 2026</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#eef2ff;color:#4338ca;"><style>.badge[style*='eef2ff']::before{background:#6366f1;}</style>Pending Verification</span></td>
+                  <td class="px-5 py-4 text-center">
+                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
+                  </td>
+                  <td class="px-3 py-4 text-center">
+                    <button class="btn-icon mx-auto" title="Start Verification">
+                      <svg width="15" height="15" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                    </button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-005</td>
+                  <td class="px-5 py-4 text-surface-600">30 Apr 2026</td>
+                  <td class="px-5 py-4"><span class="font-mono text-xs text-brand-700">CLM-007</span> <span class="text-surface-400">· Hotel accommodation</span></td>
+                  <td class="px-5 py-4 text-surface-400">2 May 2026</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#f5f3ff;color:#6d28d9;"><style>.badge[style*='f5f3ff']::before{background:#8b5cf6;}</style>Queued</span></td>
+                  <td class="px-5 py-4 text-center">
+                    <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
+                  </td>
+                  <td class="px-3 py-4 text-center"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statements: Upload Form -->
+      <div id="statements-form" class="hidden animate-in">
+        <button onclick="hideStatementsForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Statements
+        </button>
+        <div class="max-w-lg">
+          <h2 class="text-xl font-bold text-surface-900 mb-1">Upload Statement</h2>
+          <p class="text-sm text-surface-400 mb-8">Upload your credit card statement and link it to an existing claim.</p>
+
+          <div class="space-y-5">
+            <div>
+              <label class="input-label">Statement File <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <div class="file-drop">
+                <svg class="mx-auto mb-3 text-surface-300" width="40" height="40" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <p class="text-sm font-medium text-surface-600 mb-1">Drop your file here or click to browse</p>
+                <p class="text-xs text-surface-400">PDF, JPG, or PNG — max 10MB</p>
+              </div>
+            </div>
+            <div>
+              <label class="input-label">Statement Closing Date <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input type="date" class="input-field">
+            </div>
+            <div>
+              <label class="input-label">Link to Claim <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <select class="input-field">
+                <option value="" disabled selected>Select a claim...</option>
+                <option>CLM-001 — Client dinner — Q4 review (Ahmad Razak)</option>
+                <option>CLM-003 — Travel — KL to Penang flight (Lee Wei Ming)</option>
+              </select>
+              <p class="text-xs text-surface-400 mt-1.5">Only claims with "Awaiting Statement" status are shown.</p>
+            </div>
+
+            <!-- Start verification immediately -->
+            <div class="bg-surface-50 border border-surface-200 rounded-lg px-4 py-3">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" class="mt-0.5 w-4 h-4 rounded border-surface-300 text-brand-600 focus:ring-2 focus:ring-brand-500 cursor-pointer flex-shrink-0">
+                <div>
+                  <p class="text-sm font-medium text-surface-800">Start verification immediately</p>
+                  <p class="text-xs text-surface-400 mt-0.5">Queue the statement for verification right after upload. If unchecked, the statement will sit in "Pending Verification" until you start it manually.</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button class="btn-primary">Upload Statement</button>
+            <button onclick="hideStatementsForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statements: Detail View -->
+      <div id="statements-detail" class="hidden animate-in">
+        <button onclick="hideStatementDetail()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-4 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Statements
+        </button>
+
+        <!-- Demo status switcher -->
+        <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider flex-shrink-0">Mock Preview:</span>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="setDetailStatus('pending')" class="status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-status="pending">Pending Verification</button>
+            <button onclick="setDetailStatus('queued')" class="status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-status="queued">Queued</button>
+            <button onclick="setDetailStatus('inprogress')" class="status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-status="inprogress">In Progress</button>
+            <button onclick="setDetailStatus('success')" class="status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-status="success">Success</button>
+            <button onclick="setDetailStatus('failed')" class="status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800" data-status="failed">Failed</button>
+          </div>
+        </div>
+
+        <div class="max-w-3xl">
+          <!-- Header -->
+          <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+            <div class="flex items-center gap-3">
+              <div>
+                <h2 class="text-xl font-bold text-surface-900 mb-1">Statement Details</h2>
+                <p class="font-mono text-sm text-brand-700">STM-003</p>
+              </div>
+              <span id="detail-status-badge" class="badge" style="background:#fef2f2;color:#b91c1c;">Failed</span>
+            </div>
+            <div class="flex flex-wrap gap-2 self-start">
+              <!-- Start Verification button: only visible when status is Pending Verification -->
+              <button id="start-verification-btn" class="btn-primary flex-shrink-0" style="display:none;">
+                <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                Start Verification
+              </button>
+              <!-- Retry button: only visible when status is Failed or Success -->
+              <button id="retry-btn" class="btn-primary flex-shrink-0">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><polyline points="23,4 23,10 17,10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Retry Verification
+              </button>
+            </div>
+          </div>
+
+          <!-- Details Card -->
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm mb-8">
+            <div class="px-6 py-4 border-b border-surface-100">
+              <h3 class="text-sm font-semibold text-surface-900">Overview</h3>
+            </div>
+            <div class="detail-grid grid grid-cols-1 sm:grid-cols-2 gap-0">
+              <!-- Statement Date -->
+              <div class="px-6 py-4 border-b border-surface-100 sm:border-r">
+                <p class="text-xs text-surface-400 mb-1">Statement Date</p>
+                <p class="text-sm font-medium text-surface-800">31 Mar 2026</p>
+              </div>
+              <!-- Upload Date -->
+              <div class="px-6 py-4 border-b border-surface-100">
+                <p class="text-xs text-surface-400 mb-1">Upload Date</p>
+                <p class="text-sm font-medium text-surface-800">5 May 2026</p>
+              </div>
+              <!-- Linked Claim -->
+              <div class="px-6 py-4 border-b border-surface-100 sm:border-r">
+                <p class="text-xs text-surface-400 mb-1">Linked Claim</p>
+                <p class="text-sm font-medium text-surface-800"><span class="font-mono text-brand-700">CLM-005</span> — Software license renewal</p>
+              </div>
+              <!-- Claimant -->
+              <div class="px-6 py-4 border-b border-surface-100">
+                <p class="text-xs text-surface-400 mb-1">Claimant</p>
+                <p class="text-sm font-medium text-surface-800">Lee Wei Ming</p>
+              </div>
+              <!-- Claim Description -->
+              <div class="px-6 py-4 border-b border-surface-100 sm:border-r">
+                <p class="text-xs text-surface-400 mb-1">Claim Description</p>
+                <p class="text-sm font-medium text-surface-800">Software license renewal — Adobe Creative Suite annual subscription</p>
+              </div>
+              <!-- File -->
+              <div class="px-6 py-4 sm:border-r">
+                <p class="text-xs text-surface-400 mb-1">Statement File</p>
+                <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700 underline inline-flex items-center gap-1.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  statement_march2026.pdf
+                </a>
+              </div>
+              <!-- Google Drive -->
+              <div class="px-6 py-4">
+                <p class="text-xs text-surface-400 mb-1">Google Drive Folder</p>
+                <a href="#" class="text-sm font-medium text-brand-600 hover:text-brand-700 underline inline-flex items-center gap-1.5">
+                  <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  Open in Google Drive
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Verification History — Accordion list -->
+          <div class="mb-2">
+            <h3 class="text-sm font-semibold text-surface-900 mb-3">Verification History</h3>
+          </div>
+          <div class="space-y-3">
+
+            <!-- Accordion Item 1 — Failed (most recent) -->
+            <div class="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
+              <button onclick="toggleAccordion('acc-1')" class="w-full flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-4 hover:bg-surface-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="badge" style="background:#fef2f2;color:#b91c1c;">Failed</span>
+                  <span class="text-sm font-mono text-surface-600">JOB-8a3f-29d1-c4e7</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-surface-400">10 May 2026, 2:34 PM</span>
+                  <svg class="accordion-chevron w-4 h-4 text-surface-400 transition-transform" id="chevron-acc-1" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </button>
+              <div id="acc-1" class="hidden">
+                <div class="mx-5 mb-5 rounded-lg bg-red-50 border border-red-200 px-5 py-4">
+                  <p class="text-xs font-semibold text-red-800 uppercase tracking-wider mb-2">Opus Response</p>
+                  <p class="text-sm text-red-700 leading-relaxed">Transaction amount mismatch: statement shows MYR 1,250.00 but claim amount is MYR 1,350.00. The amounts do not reconcile within the allowed variance threshold of ±5%. Discrepancy of MYR 100.00 detected on line item dated 15 Mar 2026.</p>
+                  <div class="mt-3 pt-3 border-t border-red-200 flex gap-4">
+                    <div>
+                      <p class="text-xs text-red-500">Statement Amount</p>
+                      <p class="text-sm font-semibold text-red-800">MYR 1,250.00</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-red-500">Claim Amount</p>
+                      <p class="text-sm font-semibold text-red-800">MYR 1,350.00</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-red-500">Variance</p>
+                      <p class="text-sm font-semibold text-red-800">MYR 100.00 (8%)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accordion Item 2 — Failed (older attempt) -->
+            <div class="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
+              <button onclick="toggleAccordion('acc-2')" class="w-full flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-4 hover:bg-surface-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="badge" style="background:#fef2f2;color:#b91c1c;">Failed</span>
+                  <span class="text-sm font-mono text-surface-600">JOB-5b2e-18a3-d7f9</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-surface-400">8 May 2026, 10:12 AM</span>
+                  <svg class="accordion-chevron w-4 h-4 text-surface-400 transition-transform" id="chevron-acc-2" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </button>
+              <div id="acc-2" class="hidden">
+                <div class="mx-5 mb-5 rounded-lg bg-red-50 border border-red-200 px-5 py-4">
+                  <p class="text-xs font-semibold text-red-800 uppercase tracking-wider mb-2">Opus Response</p>
+                  <p class="text-sm text-red-700 leading-relaxed">Unable to extract transaction data from uploaded statement. The document appears to be a partial scan — page 2 of 3 is missing. Please re-upload the complete credit card statement.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Accordion Item 3 — Success example -->
+            <div class="bg-white rounded-xl border border-surface-200 shadow-sm overflow-hidden">
+              <button onclick="toggleAccordion('acc-3')" class="w-full flex flex-wrap items-center justify-between gap-2 px-4 sm:px-5 py-4 hover:bg-surface-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <span class="badge" style="background:#ecfdf5;color:#047857;">Success</span>
+                  <span class="text-sm font-mono text-surface-600">JOB-1c4d-77e2-a0b3</span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-surface-400">6 May 2026, 4:50 PM</span>
+                  <svg class="accordion-chevron w-4 h-4 text-surface-400 transition-transform" id="chevron-acc-3" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+              </button>
+              <div id="acc-3" class="hidden">
+                <div class="mx-5 mb-5 rounded-lg bg-emerald-50 border border-emerald-200 px-5 py-4">
+                  <p class="text-xs font-semibold text-emerald-800 uppercase tracking-wider mb-2">Opus Response</p>
+                  <p class="text-sm text-emerald-700 leading-relaxed">Verification successful. Transaction amount of MYR 1,250.00 on statement dated 15 Mar 2026 matches the claim line item. Merchant name "Adobe Systems" confirmed. No discrepancies found.</p>
+                  <div class="mt-3 pt-3 border-t border-emerald-200 flex gap-4">
+                    <div>
+                      <p class="text-xs text-emerald-500">Verified Amount</p>
+                      <p class="text-sm font-semibold text-emerald-800">MYR 1,250.00</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-emerald-500">Merchant</p>
+                      <p class="text-sm font-semibold text-emerald-800">Adobe Systems</p>
+                    </div>
+                    <div>
+                      <p class="text-xs text-emerald-500">Transaction Date</p>
+                      <p class="text-sm font-semibold text-emerald-800">15 Mar 2026</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Statements: Empty State -->
+      <div id="statements-empty" class="hidden animate-in">
+        <div class="flex flex-col items-center justify-center py-24 text-center">
+          <div class="w-20 h-20 rounded-2xl bg-brand-50 flex items-center justify-center mb-6">
+            <svg width="36" height="36" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="#91a7ff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="#91a7ff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-surface-900 mb-2">No statements uploaded</h3>
+          <p class="text-surface-400 max-w-sm mb-6">Upload your first credit card statement to begin the verification process.</p>
+          <button onclick="showStatementsForm()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Upload First Statement
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== USER MANAGEMENT ===== -->
+    <div id="page-users" class="page">
+      <div class="animate-in">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-surface-900">User Management</h2>
+            <p class="text-sm text-surface-400 mt-0.5">Manage portal users and access roles</p>
+          </div>
+          <button onclick="showAddUserModal()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add User
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+          <div class="relative flex-1 w-full lg:max-w-sm">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search users..." class="input-field pl-9 w-full">
+          </div>
+          <select class="input-field w-full lg:w-auto lg:min-w-[140px]">
+            <option>All Roles</option>
+            <option>Admin</option>
+            <option>Finance</option>
+            <option>Employee</option>
+          </select>
+          <select class="input-field w-full lg:w-auto lg:min-w-[140px]">
+            <option>All Statuses</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3.5 font-semibold">Name</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Email</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Role</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Status</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Date Added</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Created By</th>
+                  <th class="text-right px-5 py-3.5 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-semibold text-xs flex-shrink-0">SC</div>
+                      <span class="font-medium text-surface-800">Sarah Chen</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-surface-600">sarah.chen@company.com</td>
+                  <td class="px-5 py-4"><span class="px-2.5 py-1 bg-purple-50 text-purple-700 text-xs font-medium rounded-md">Admin</span></td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">System</td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-semibold text-xs flex-shrink-0">AR</div>
+                      <span class="font-medium text-surface-800">Ahmad Razak</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-surface-600">ahmad.razak@company.com</td>
+                  <td class="px-5 py-4"><span class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-md">Employee</span></td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">15 Feb 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-semibold text-xs flex-shrink-0">NH</div>
+                      <span class="font-medium text-surface-800">Nurul Huda</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-surface-600">nurul.huda@company.com</td>
+                  <td class="px-5 py-4"><span class="px-2.5 py-1 bg-teal-50 text-teal-700 text-xs font-medium rounded-md">Finance</span></td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">20 Feb 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4">
+                    <div class="flex items-center gap-3">
+                      <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-semibold text-xs flex-shrink-0">LW</div>
+                      <span class="font-medium text-surface-400">Lee Wei Ming</span>
+                    </div>
+                  </td>
+                  <td class="px-5 py-4 text-surface-400">lee.weiming@company.com</td>
+                  <td class="px-5 py-4"><span class="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-md">Employee</span></td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#f3f4f6;color:#6b7280;"><style>.badge[style*='f3f4f6']::before{background:#9ca3af;}</style>Inactive</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Mar 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button class="btn-icon" title="Edit role"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== ENTITY MANAGEMENT ===== -->
+    <div id="page-entities" class="page">
+      <div class="animate-in">
+        <div class="page-header flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-surface-900">Entities</h2>
+            <p class="text-sm text-surface-400 mt-0.5">Configure legal entities that can own claims</p>
+          </div>
+          <button onclick="showAddEntityModal()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add Entity
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+          <div class="relative flex-1 w-full lg:max-w-sm">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search entities..." class="input-field pl-9 w-full">
+          </div>
+          <select class="input-field w-full lg:w-auto lg:min-w-[140px]">
+            <option>All Statuses</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3.5 font-semibold">Entity Code</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Entity Name</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Country</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Status</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Date Added</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Created By</th>
+                  <th class="text-right px-5 py-3.5 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-my</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">APD Malaysia</td>
+                  <td class="px-5 py-4 text-surface-600">🇲🇾 Malaysia</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-sg</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">APD Singapore</td>
+                  <td class="px-5 py-4 text-surface-600">🇸🇬 Singapore</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-hk</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">APD Hong Kong</td>
+                  <td class="px-5 py-4 text-surface-600">🇭🇰 Hong Kong</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">15 Feb 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ========== ADD ENTITY MODAL ========== -->
+<div id="add-entity-modal" class="modal-overlay">
+  <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <div class="px-6 py-5 border-b border-surface-100 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-surface-900">Add New Entity</h3>
+      <button onclick="hideAddEntityModal()" class="btn-icon !border-0 !w-8 !h-8">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="px-6 py-6 space-y-5">
+      <div>
+        <label class="input-label">Entity Code <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+        <input type="text" class="input-field font-mono" placeholder="e.g. apd-th">
+        <p class="text-xs text-surface-400 mt-1.5">Lowercase, hyphen-separated. Used in claim IDs and dropdowns.</p>
+      </div>
+      <div>
+        <label class="input-label">Entity Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+        <input type="text" class="input-field" placeholder="e.g. APD Thailand">
+      </div>
+      <div>
+        <label class="input-label">Country <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+        <select class="input-field">
+          <option value="" disabled selected>Select country...</option>
+          <option>Malaysia</option>
+          <option>Singapore</option>
+          <option>Hong Kong</option>
+          <option>Thailand</option>
+          <option>Indonesia</option>
+          <option>Philippines</option>
+          <option>Vietnam</option>
+          <option>United Arab Emirates</option>
+        </select>
+      </div>
+      <p class="text-xs text-surface-400 pt-2"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+    </div>
+    <div class="px-6 py-4 bg-surface-50 border-t border-surface-100 flex justify-end gap-3">
+      <button onclick="hideAddEntityModal()" class="btn-secondary">Cancel</button>
+      <button class="btn-primary">Add Entity</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== ADD USER MODAL ========== -->
+<div id="add-user-modal" class="modal-overlay">
+  <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+    <div class="px-6 py-5 border-b border-surface-100 flex items-center justify-between">
+      <h3 class="text-lg font-bold text-surface-900">Add New User</h3>
+      <button onclick="hideAddUserModal()" class="btn-icon !border-0 !w-8 !h-8">
+        <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="px-6 py-6 space-y-5">
+      <div>
+        <label class="input-label">Full Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+        <input type="text" class="input-field" placeholder="e.g. Ahmad Razak">
+      </div>
+      <div>
+        <label class="input-label">Email Address <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+        <input type="email" class="input-field" placeholder="e.g. ahmad@company.com">
+      </div>
+      <div>
+        <label class="input-label">Role <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+        <select class="input-field">
+          <option value="" disabled selected>Select role...</option>
+          <option>Admin</option>
+          <option>Finance</option>
+          <option>Employee</option>
+        </select>
+      </div>
+      <p class="text-xs text-surface-400 pt-2"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+    </div>
+    <div class="px-6 py-4 bg-surface-50 border-t border-surface-100 flex justify-end gap-3">
+      <button onclick="hideAddUserModal()" class="btn-secondary">Cancel</button>
+      <button class="btn-primary">Add User</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== LOGIN SCREEN ========== -->
+<div id="login-screen" class="fixed inset-0 z-[200] bg-gradient-to-br from-brand-50 via-white to-surface-50 hidden">
+  <div class="min-h-screen flex flex-col items-center justify-center px-4 py-8">
+
+    <!-- Login card -->
+    <div class="w-full max-w-sm bg-white rounded-2xl border border-surface-200 shadow-xl shadow-surface-900/5 p-8">
+      <div class="text-center mb-7">
+        <h2 class="text-lg font-bold text-surface-900 mb-1.5">Welcome back</h2>
+        <p class="text-sm text-surface-500">Sign in with your company Google account to continue</p>
+      </div>
+
+      <!-- Google Sign-in button -->
+      <button onclick="loginSuccess()" class="w-full flex items-center justify-center gap-3 bg-white border border-surface-300 hover:border-surface-400 hover:bg-surface-50 text-surface-800 font-semibold text-sm py-3 px-4 rounded-lg transition-all shadow-sm">
+        <svg width="20" height="20" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+        </svg>
+        Sign in with Google
+      </button>
+
+      <!-- Access info -->
+      <div class="mt-6 flex items-start gap-2.5 text-xs text-surface-400 bg-surface-50 border border-surface-100 rounded-lg px-3.5 py-3">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" class="flex-shrink-0 mt-0.5 text-surface-400"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="16" x2="12" y2="12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <p class="leading-relaxed">Only company email addresses pre-registered by an administrator can access this portal.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========== DEMO CONTROLS (floating) ========== -->
+<div class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col gap-2 items-end">
+  <button onclick="showLoginScreen()" class="bg-white text-surface-700 border border-surface-300 text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg hover:bg-surface-50 transition-colors">
+    Show Login Screen
+  </button>
+  <button onclick="toggleEmptyStates()" id="toggle-empty-btn" class="bg-surface-800 text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-lg hover:bg-surface-900 transition-colors">
+    Show Empty States
+  </button>
+</div>
+
+<script>
+  // Theme toggle (dark/light)
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.classList.toggle('dark');
+    document.getElementById('theme-icon-sun').style.display = isDark ? 'none' : '';
+    document.getElementById('theme-icon-moon').style.display = isDark ? '' : 'none';
+  }
+
+  // Login screen (demo)
+  function showLoginScreen() {
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+  function loginSuccess() {
+    document.getElementById('login-screen').classList.add('hidden');
+  }
+
+  // Mobile sidebar
+  function toggleMobileSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.toggle('mobile-open');
+    overlay.classList.toggle('show');
+  }
+  function closeMobileSidebar() {
+    document.getElementById('sidebar').classList.remove('mobile-open');
+    document.getElementById('sidebar-overlay').classList.remove('show');
+  }
+
+  // Navigation
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+    const target = document.getElementById('page-' + page);
+    if (target) {
+      target.classList.add('active-page');
+      target.querySelectorAll('.animate-in').forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = '';
+      });
+    }
+
+    const navBtn = document.querySelector(`[data-page="${page}"]`);
+    if (navBtn) navBtn.classList.add('active');
+
+    const titles = { dashboard: 'Dashboard', receipts: 'Claims — Receipts', statements: 'Claims — Statements', users: 'User Management', entities: 'Entities' };
+    document.getElementById('page-title').textContent = titles[page] || 'Dashboard';
+
+    closeMobileSidebar();
+  }
+
+  // Entity modal
+  function showAddEntityModal() {
+    document.getElementById('add-entity-modal').classList.add('show');
+  }
+  function hideAddEntityModal() {
+    document.getElementById('add-entity-modal').classList.remove('show');
+  }
+
+  // Nav groups
+  function toggleGroup(group) {
+    const el = document.getElementById(group + '-group');
+    const chevron = document.getElementById(group + '-chevron');
+    if (el.style.display === 'none') {
+      el.style.display = '';
+      chevron.style.transform = '';
+    } else {
+      el.style.display = 'none';
+      chevron.style.transform = 'rotate(-90deg)';
+    }
+  }
+
+  // Accordion toggle
+  function toggleAccordion(id) {
+    const content = document.getElementById(id);
+    const chevron = document.getElementById('chevron-' + id);
+    if (content.classList.contains('hidden')) {
+      content.classList.remove('hidden');
+      chevron.style.transform = 'rotate(180deg)';
+    } else {
+      content.classList.add('hidden');
+      chevron.style.transform = '';
+    }
+  }
+
+  // Detail page status toggle (demo)
+  const statusConfig = {
+    pending:    { label: 'Pending Verification', bg: '#eef2ff', color: '#4338ca', showStart: true,  showRetry: false },
+    queued:     { label: 'Queued',               bg: '#f5f3ff', color: '#6d28d9', showStart: false, showRetry: false },
+    inprogress: { label: 'In Progress',          bg: '#eff6ff', color: '#1d4ed8', showStart: false, showRetry: false },
+    success:    { label: 'Success',              bg: '#ecfdf5', color: '#047857', showStart: false, showRetry: true },
+    failed:     { label: 'Failed',               bg: '#fef2f2', color: '#b91c1c', showStart: false, showRetry: true },
+  };
+  function setDetailStatus(status) {
+    const cfg = statusConfig[status];
+    const badge = document.getElementById('detail-status-badge');
+    const startBtn = document.getElementById('start-verification-btn');
+    const retryBtn = document.getElementById('retry-btn');
+
+    badge.textContent = cfg.label;
+    badge.style.background = cfg.bg;
+    badge.style.color = cfg.color;
+
+    startBtn.style.display = cfg.showStart ? '' : 'none';
+    retryBtn.style.display = cfg.showRetry ? '' : 'none';
+
+    document.querySelectorAll('.status-toggle').forEach(btn => {
+      if (btn.dataset.status === status) {
+        btn.className = 'status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800';
+      } else {
+        btn.className = 'status-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-white text-surface-600 border-surface-200 hover:bg-surface-50';
+      }
+    });
+  }
+
+  // Dashboard role toggle
+  function setDashboardRole(role) {
+    document.getElementById('dash-admin').classList.toggle('hidden', role !== 'admin');
+    document.getElementById('dash-employee').classList.toggle('hidden', role !== 'employee');
+    document.querySelectorAll('.dash-role-toggle').forEach(btn => {
+      if (btn.dataset.role === role) {
+        btn.className = 'dash-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800';
+      } else {
+        btn.className = 'dash-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-white text-surface-600 border-surface-200 hover:bg-surface-50';
+      }
+    });
+  }
+
+  // Receipts form toggle
+  function showReceiptsForm() {
+    document.getElementById('receipts-list').classList.add('hidden');
+    document.getElementById('receipts-empty').classList.add('hidden');
+    document.getElementById('receipts-form').classList.remove('hidden');
+  }
+  function hideReceiptsForm() {
+    document.getElementById('receipts-form').classList.add('hidden');
+    if (emptyMode) {
+      document.getElementById('receipts-empty').classList.remove('hidden');
+    } else {
+      document.getElementById('receipts-list').classList.remove('hidden');
+    }
+  }
+
+  // Statements form toggle
+  function showStatementsForm() {
+    document.getElementById('statements-list').classList.add('hidden');
+    document.getElementById('statements-empty').classList.add('hidden');
+    document.getElementById('statements-detail').classList.add('hidden');
+    document.getElementById('statements-form').classList.remove('hidden');
+  }
+  function hideStatementsForm() {
+    document.getElementById('statements-form').classList.add('hidden');
+    if (emptyMode) {
+      document.getElementById('statements-empty').classList.remove('hidden');
+    } else {
+      document.getElementById('statements-list').classList.remove('hidden');
+    }
+  }
+
+  // Statement detail
+  function showStatementDetail() {
+    document.getElementById('statements-list').classList.add('hidden');
+    document.getElementById('statements-detail').classList.remove('hidden');
+  }
+  function hideStatementDetail() {
+    document.getElementById('statements-detail').classList.add('hidden');
+    document.getElementById('statements-list').classList.remove('hidden');
+  }
+
+  // Add user modal
+  function showAddUserModal() {
+    document.getElementById('add-user-modal').classList.add('show');
+  }
+  function hideAddUserModal() {
+    document.getElementById('add-user-modal').classList.remove('show');
+  }
+
+  // Toggle empty states (demo)
+  let emptyMode = false;
+  function toggleEmptyStates() {
+    emptyMode = !emptyMode;
+    const btn = document.getElementById('toggle-empty-btn');
+    if (emptyMode) {
+      btn.textContent = 'Show Data Views';
+      document.getElementById('receipts-list').classList.add('hidden');
+      document.getElementById('receipts-empty').classList.remove('hidden');
+      document.getElementById('statements-list').classList.add('hidden');
+      document.getElementById('statements-empty').classList.remove('hidden');
+    } else {
+      btn.textContent = 'Show Empty States';
+      document.getElementById('receipts-empty').classList.add('hidden');
+      document.getElementById('receipts-list').classList.remove('hidden');
+      document.getElementById('statements-empty').classList.add('hidden');
+      document.getElementById('statements-list').classList.remove('hidden');
+    }
+  }
+
+  // Close modal on overlay click
+  document.getElementById('add-user-modal').addEventListener('click', function(e) {
+    if (e.target === this) hideAddUserModal();
+  });
+  document.getElementById('add-entity-modal').addEventListener('click', function(e) {
+    if (e.target === this) hideAddEntityModal();
+  });
+</script>
+
+</body>
+</html>

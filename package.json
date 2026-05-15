@@ -1,0 +1,36 @@
+{
+  "name": "finance-coe-app",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx scripts/seed-admin.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.3.0",
+    "better-auth": "^1.6.11",
+    "drizzle-orm": "^0.45.2",
+    "next": "^15.3.3",
+    "pg": "^8.20.0",
+    "postcss": "^8.5.14",
+    "react": "^19",
+    "react-dom": "^19",
+    "tailwindcss": "^4.3.0",
+    "zod": "^3.25.51"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.3",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "tsx": "^4.19.4",
+    "typescript": "~5.8.3"
+  }
+}
