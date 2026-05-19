@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 
 export async function reserveNextStatementSequence(): Promise<number> {
   const result = await db.execute(
+    // language=PostgreSQL
     sql`SELECT nextval('statement_seq')::int AS seq`
   );
   // pg driver returns { rows: [...] }; postgres-js returns the array directly.
