@@ -175,3 +175,45 @@ export async function deleteDriveFile(fileId: string): Promise<void> {
     requestBody: { trashed: true },
   });
 }
+
+export async function uploadStatementFile(
+  parentFolderId: string,
+  filename: string,
+  file: File,
+): Promise<{ fileId: string; webViewLink: string }> {
+  const drive = getDriveClient();
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const res = await drive.files.create({
+    requestBody: {
+      name: filename,
+      parents: [parentFolderId],
+    },
+    media: {
+      mimeType: file.type,
+      body: bufferToStream(buffer),
+    },
+    fields: "id, webViewLink",
+    supportsAllDrives: true,
+  });
+
+  if (!res.data.id || !res.data.webViewLink) {
+    throw new Error("Drive returned an incomplete response (missing id or webViewLink).");
+  }
+  return { fileId: res.data.id, webViewLink: res.data.webViewLink };
+}
+
+export async function moveStatementFile(
+  fileId: string,
+  fromFolderId: string,
+  toFolderId: string,
+): Promise<void> {
+  const drive = getDriveClient();
+  await drive.files.update({
+    fileId,
+    addParents: toFolderId,
+    removeParents: fromFolderId,
+    fields: "id, parents",
+    supportsAllDrives: true,
+  });
+}

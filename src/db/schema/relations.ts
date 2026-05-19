@@ -5,12 +5,15 @@ import { claim } from "./claim";
 import { department } from "./department";
 import { class_ } from "./class";
 import { receipt } from "./receipt";
+import { statement } from "./statement";
+import { statementVerificationAttempt } from "./statementVerificationAttempt";
 
 export const claimRelations = relations(claim, ({ one, many }) => ({
   entity: one(entity, { fields: [claim.entityId], references: [entity.id] }),
   claimant: one(user, { fields: [claim.claimantId], references: [user.id], relationName: "claimant" }),
   createdByUser: one(user, { fields: [claim.createdBy], references: [user.id], relationName: "claimCreatedBy" }),
   receipts: many(receipt),
+  statement: one(statement, { fields: [claim.id], references: [statement.claimId] }),
 }));
 
 export const receiptRelations = relations(receipt, ({ one }) => ({
@@ -32,3 +35,38 @@ export const classRelations = relations(class_, ({ many }) => ({
 export const entityRelations = relations(entity, ({ many }) => ({
   claims: many(claim),
 }));
+
+export const statementRelations = relations(statement, ({ one, many }) => ({
+  claim: one(claim, { fields: [statement.claimId], references: [claim.id] }),
+  uploadedByUser: one(user, {
+    fields: [statement.uploadedBy],
+    references: [user.id],
+    relationName: "statementUploadedBy",
+  }),
+  updatedByUser: one(user, {
+    fields: [statement.updatedBy],
+    references: [user.id],
+    relationName: "statementUpdatedBy",
+  }),
+  deletedByUser: one(user, {
+    fields: [statement.deletedBy],
+    references: [user.id],
+    relationName: "statementDeletedBy",
+  }),
+  attempts: many(statementVerificationAttempt),
+}));
+
+export const statementVerificationAttemptRelations = relations(
+  statementVerificationAttempt,
+  ({ one }) => ({
+    statement: one(statement, {
+      fields: [statementVerificationAttempt.statementId],
+      references: [statement.id],
+    }),
+    triggeredByUser: one(user, {
+      fields: [statementVerificationAttempt.triggeredBy],
+      references: [user.id],
+      relationName: "attemptTriggeredBy",
+    }),
+  })
+);

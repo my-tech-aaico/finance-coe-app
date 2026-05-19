@@ -3,10 +3,10 @@
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
-import { claim, entity, user } from "@/db/schema";
+import { claim, entity, statement, user } from "@/db/schema";
 import { formatDisplayId } from "@/lib/claim-id";
 import { reserveNextSequence } from "@/lib/claim-seq.server";
 import { createClaimFolders, renameFolder } from "@/lib/drive";
@@ -218,9 +218,14 @@ export async function deleteClaim(
 
   await db.transaction(async (tx) => {
     await tx.update(claim).set({ deletedAt, deletedBy: actor.id }).where(eq(claim.id, claimId));
+    await tx
+      .update(statement)
+      .set({ deletedAt, deletedBy: actor.id })
+      .where(and(eq(statement.claimId, claimId), isNull(statement.deletedAt)));
   });
 
   revalidatePath("/claims/receipts");
+  revalidatePath("/claims/statements");
   return { ok: true };
 }
 
@@ -237,8 +242,13 @@ export async function restoreClaim(
 
   await db.transaction(async (tx) => {
     await tx.update(claim).set({ deletedAt: null, deletedBy: null }).where(eq(claim.id, claimId));
+    await tx
+      .update(statement)
+      .set({ deletedAt: null, deletedBy: null })
+      .where(eq(statement.claimId, claimId));
   });
 
   revalidatePath("/claims/receipts");
+  revalidatePath("/claims/statements");
   return { ok: true };
 }

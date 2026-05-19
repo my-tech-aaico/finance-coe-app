@@ -22,7 +22,17 @@
       "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/\\(app\\)/claims/receipts/[id]/_components\")",
       "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/\\(app\\)/claims/receipts/[id]/_lib\")",
       "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/\\(app\\)/claims/receipts/[id]/receipts/[receiptId]/view\")",
-      "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/api/receipts/[receiptId]/file\")"
+      "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/api/receipts/[receiptId]/file\")",
+      "Bash(awk NR>=1030 && NR<=1060 {print NR\": \"$0} *)",
+      "Bash(awk NR>=1180 && NR<=1230 {print NR\": \"$0} *)",
+      "Bash(awk NR>=1330 && NR<=1390 {print NR\": \"$0} *)",
+      "Bash(awk NR>=1265 && NR<=1320 {print NR\": \"$0} *)",
+      "Bash(awk NR>=698 && NR<=720 {print NR\": \"$0} *)",
+      "Bash(timeout 35 npx next build)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/claims/statements)",
+      "Bash(curl -sS -o /tmp/stmt-list.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/claims/statements)",
+      "Read(//tmp/**)",
+      "Bash(pkill -f \"next dev\")"
     ]
   }
 }

@@ -5,4 +5,6 @@ export * from "./department";
 export * from "./class";
 export * from "./fxRate";
 export * from "./receipt";
+export * from "./statement";
+export * from "./statementVerificationAttempt";
 export * from "./relations";
