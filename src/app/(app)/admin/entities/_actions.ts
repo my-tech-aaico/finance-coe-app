@@ -23,10 +23,15 @@ const CountrySchema = z
   .string()
   .refine((c) => COUNTRY_CODES.has(c), "Unsupported country.");
 
+const CurrencySchema = z
+  .string()
+  .regex(/^[A-Z]{3}$/, "Currency must be a 3-letter uppercase ISO 4217 code (e.g. MYR, SGD).");
+
 const CreateInput = z.object({
   code: CodeSchema,
   name: NameSchema,
   country: CountrySchema,
+  currency: CurrencySchema,
 });
 
 type ActionResult = { error: string } | { ok: true } | null;
@@ -49,6 +54,7 @@ export async function createEntity(_prev: ActionResult, formData: FormData): Pro
     code: parsed.data.code,
     name: parsed.data.name,
     country: parsed.data.country,
+    currency: parsed.data.currency,
     status: "active",
     createdBy: admin.id,
   });
@@ -62,6 +68,7 @@ const UpdateInput = z.object({
   code: CodeSchema,
   name: NameSchema,
   country: CountrySchema,
+  currency: CurrencySchema,
 });
 
 export async function updateEntity(_prev: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -87,6 +94,7 @@ export async function updateEntity(_prev: ActionResult, formData: FormData): Pro
       code: parsed.data.code,
       name: parsed.data.name,
       country: parsed.data.country,
+      currency: parsed.data.currency,
       updatedBy: admin.id,
       updatedAt: new Date(),
     })

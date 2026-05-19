@@ -144,7 +144,8 @@ export async function updateClaim(
       .where(eq(claim.id, data.claimId));
 
     revalidatePath("/claims/receipts");
-    redirect("/claims/receipts");
+    revalidatePath(`/claims/receipts/${data.claimId}`);
+    redirect(`/claims/receipts/${data.claimId}`);
   }
 
   const newDisplayId = formatDisplayId(
@@ -196,7 +197,8 @@ export async function updateClaim(
   }
 
   revalidatePath("/claims/receipts");
-  redirect("/claims/receipts");
+  revalidatePath(`/claims/receipts/${data.claimId}`);
+  redirect(`/claims/receipts/${data.claimId}`);
 }
 
 const DeleteInput = z.object({ claimId: z.string() });

@@ -38,10 +38,12 @@ export default async function EditClaimPage({
       : activeUsers;
 
   return (
-    <EditClaimForm
-      claim={existing}
-      entities={entities}
-      users={users}
-    />
+    <div className="animate-in">
+      <EditClaimForm
+        claim={existing}
+        entities={entities}
+        users={users}
+      />
+    </div>
   );
 }

@@ -11,6 +11,7 @@ type Entity = {
   code: string;
   name: string;
   country: string;
+  currency: string;
   status: "active" | "inactive";
   createdAt: Date;
   updatedAt: Date;
@@ -141,6 +142,7 @@ export function EntityTable({ entities, filters }: Props) {
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Entity Code</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Entity Name</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Country</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Currency</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Status</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Date Added</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Created By</th>
@@ -170,6 +172,19 @@ export function EntityTable({ entities, filters }: Props) {
                       <td className="px-5 py-4 font-medium text-surface-800">{e.name}</td>
                       <td className="px-5 py-4 text-surface-600">
                         {country ? `${country.flag} ${country.label}` : e.country}
+                      </td>
+                      <td className="px-5 py-4">
+                        <span style={{
+                          fontFamily: "monospace",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          background: "#fefce8",
+                          color: "#854d0e",
+                          padding: "2px 8px",
+                          borderRadius: 6,
+                        }}>
+                          {e.currency}
+                        </span>
                       </td>
                       <td className="px-5 py-4">
                         <span className={`badge justify-center ${STATUS_COLORS[e.status] ?? ""}`} style={{ textTransform: "capitalize" }}>

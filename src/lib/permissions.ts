@@ -2,10 +2,12 @@ type Role = "admin" | "finance" | "employee";
 
 const ACCESS_MAP: Record<string, Role[]> = {
   "/dashboard": ["admin", "finance", "employee"],
-  "/claims/receipts": ["admin", "finance"],
+  "/claims/receipts": ["admin", "finance", "employee"],
   "/claims/statements": ["admin", "finance", "employee"],
   "/admin/users": ["admin"],
   "/admin/entities": ["admin"],
+  "/admin/departments": ["admin"],
+  "/admin/classes": ["admin"],
 };
 
 export function canAccess(role: Role, route: string): boolean {

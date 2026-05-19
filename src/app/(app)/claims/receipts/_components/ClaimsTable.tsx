@@ -43,6 +43,7 @@ interface Props {
   page: number;
   filters: Filters;
   isAdmin: boolean;
+  isAdminOrFinance: boolean;
   showDeleted: boolean;
 }
 
@@ -126,7 +127,7 @@ function RestoreButton({ claim }: { claim: ClaimRow }) {
   );
 }
 
-export function ClaimsTable({ claims, total, page, filters, isAdmin, showDeleted }: Props) {
+export function ClaimsTable({ claims, total, page, filters, isAdmin, isAdminOrFinance, showDeleted }: Props) {
   const router = useRouter();
   const [, startTransition] = useTransition();
 
@@ -344,8 +345,9 @@ export function ClaimsTable({ claims, total, page, filters, isAdmin, showDeleted
                         <SortIcon col={key} sort={filters.sort} dir={filters.dir} />
                       </th>
                     ))}
-                    <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Drive</th>
-                    <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Actions</th>
+                    <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Details</th>
+                    {isAdminOrFinance && <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Drive</th>}
+                    {isAdminOrFinance && <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-100">
@@ -412,29 +414,36 @@ export function ClaimsTable({ claims, total, page, filters, isAdmin, showDeleted
                           {new Date(c.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
                         </td>
                         <td className="px-5 py-4">
-                          <DriveLinkButton url={c.driveReceiptsUrl} />
+                          <Link href={`/claims/receipts/${c.id}`} className="btn-icon" title="View claim details">
+                            <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
+                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                              <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.8" />
+                            </svg>
+                          </Link>
                         </td>
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-2">
-                            {!isDeleted && (
-                              <>
-                                <Link href={`/claims/receipts/${c.id}/edit`} className="btn-icon" title="Edit claim">
-                                  <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
-                                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                                  </svg>
-                                </Link>
-                                {c.status === "statement_attached" ? (
-                                  <button className="btn-secondary" style={{ padding: "6px 12px", fontSize: 12, height: "auto" }} disabled title="View statement (coming soon)">View</button>
-                                ) : (
-                                  <span className="text-surface-300 text-sm">—</span>
-                                )}
-                                {isAdmin && <DeleteButton claim={c} />}
-                              </>
-                            )}
-                            {isDeleted && isAdmin && <RestoreButton claim={c} />}
-                          </div>
-                        </td>
+                        {isAdminOrFinance && (
+                          <td className="px-5 py-4">
+                            <DriveLinkButton url={c.driveReceiptsUrl} />
+                          </td>
+                        )}
+                        {isAdminOrFinance && (
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-2">
+                              {!isDeleted && (
+                                <>
+                                  <Link href={`/claims/receipts/${c.id}/edit`} className="btn-icon" title="Edit claim">
+                                    <svg width="15" height="15" fill="none" viewBox="0 0 24 24">
+                                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </Link>
+                                  {isAdmin && <DeleteButton claim={c} />}
+                                </>
+                              )}
+                              {isDeleted && isAdmin && <RestoreButton claim={c} />}
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}

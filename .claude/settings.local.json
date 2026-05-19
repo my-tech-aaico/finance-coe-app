@@ -18,7 +18,11 @@
       "Bash(python3 -c \"import json,sys; p=json.load\\(sys.stdin\\); print\\('node engines:', p.get\\('engines',{}\\)\\); print\\('scripts:', list\\(p.get\\('scripts',{}\\).keys\\(\\)\\)\\)\")",
       "Bash(grep -v \"^npm warn\\\\|ExperimentalWarning\\\\|require\\(\\)\\\\|Use \\\\`node\")",
       "Bash(npm install *)",
-      "Bash(npx drizzle-kit *)"
+      "Bash(npx drizzle-kit *)",
+      "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/\\(app\\)/claims/receipts/[id]/_components\")",
+      "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/\\(app\\)/claims/receipts/[id]/_lib\")",
+      "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/\\(app\\)/claims/receipts/[id]/receipts/[receiptId]/view\")",
+      "Bash(mkdir -p \"/home/gsingh/IdeaProjects/next/finance-coe-app/src/app/api/receipts/[receiptId]/file\")"
     ]
   }
 }

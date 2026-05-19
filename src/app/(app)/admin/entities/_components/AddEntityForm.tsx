@@ -4,11 +4,34 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { createEntity, updateEntity } from "../_actions";
 import { COUNTRIES } from "@/lib/countries";
 
+const COMMON_CURRENCIES = [
+  { code: "AED", label: "AED — UAE Dirham" },
+  { code: "AUD", label: "AUD — Australian Dollar" },
+  { code: "CAD", label: "CAD — Canadian Dollar" },
+  { code: "CNY", label: "CNY — Chinese Yuan" },
+  { code: "EUR", label: "EUR — Euro" },
+  { code: "GBP", label: "GBP — British Pound" },
+  { code: "HKD", label: "HKD — Hong Kong Dollar" },
+  { code: "IDR", label: "IDR — Indonesian Rupiah" },
+  { code: "INR", label: "INR — Indian Rupee" },
+  { code: "JPY", label: "JPY — Japanese Yen" },
+  { code: "KRW", label: "KRW — South Korean Won" },
+  { code: "MYR", label: "MYR — Malaysian Ringgit" },
+  { code: "NZD", label: "NZD — New Zealand Dollar" },
+  { code: "PHP", label: "PHP — Philippine Peso" },
+  { code: "SGD", label: "SGD — Singapore Dollar" },
+  { code: "THB", label: "THB — Thai Baht" },
+  { code: "TWD", label: "TWD — Taiwan Dollar" },
+  { code: "USD", label: "USD — US Dollar" },
+  { code: "VND", label: "VND — Vietnamese Dong" },
+];
+
 type EntityForEdit = {
   id: string;
   code: string;
   name: string;
   country: string;
+  currency: string;
 };
 
 interface Props {
@@ -128,6 +151,21 @@ export function AddEntityForm({ onBack, editEntity }: Props) {
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>
+                Currency <span style={{ color: "#ef4444" }}>*</span>
+              </label>
+              <select name="currency" className="input-field" required defaultValue={editEntity?.currency ?? ""}>
+                {!isEdit && <option value="" disabled>Select currency…</option>}
+                {COMMON_CURRENCIES.map((c) => (
+                  <option key={c.code} value={c.code}>{c.label}</option>
+                ))}
+              </select>
+              <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 6 }}>
+                The local currency for this entity. Used to derive the currency of receipts.
+              </p>
             </div>
 
             {state && "error" in state && (

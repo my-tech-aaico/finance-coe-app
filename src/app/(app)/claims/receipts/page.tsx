@@ -51,7 +51,7 @@ export default async function ReceiptsPage({
 }: {
   searchParams: Promise<Search>;
 }) {
-  const actor = await requireRole(["admin", "finance"]);
+  const actor = await requireRole(["admin", "finance", "employee"]);
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1));
 
@@ -121,6 +121,7 @@ export default async function ReceiptsPage({
         page={page}
         filters={sp}
         isAdmin={actor.role === "admin"}
+        isAdminOrFinance={actor.role === "admin" || actor.role === "finance"}
         showDeleted={includeDeleted}
       />
     </div>

@@ -404,6 +404,14 @@ tailwind.config = {
           <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M9 9v.01M9 12v.01M9 15v.01M9 18v.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           <span class="nav-label">Entities</span>
         </button>
+        <button onclick="navigate('departments')" class="nav-item sub-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6" data-page="departments" data-tooltip="Departments">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M3 7h18M3 12h18M3 17h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="6" cy="7" r="1.2" fill="currentColor"/><circle cx="6" cy="12" r="1.2" fill="currentColor"/><circle cx="6" cy="17" r="1.2" fill="currentColor"/></svg>
+          <span class="nav-label">Departments</span>
+        </button>
+        <button onclick="navigate('classes')" class="nav-item sub-nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6" data-page="classes" data-tooltip="Classes">
+          <svg width="18" height="18" fill="none" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="nav-label">Classes</span>
+        </button>
       </div>
     </div>
   </nav>
@@ -806,6 +814,15 @@ tailwind.config = {
           </button>
         </div>
 
+        <!-- Demo role switcher (Mock Preview) -->
+        <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider flex-shrink-0">Mock Preview:</span>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="setClaimsListRole('admin')" class="claims-list-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800" data-role="admin">Admin / Finance</button>
+            <button onclick="setClaimsListRole('employee')" class="claims-list-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-role="employee">Employee</button>
+          </div>
+        </div>
+
         <!-- Filters -->
         <div class="flex flex-col lg:flex-row gap-3 mb-3">
           <div class="relative flex-1 w-full lg:max-w-sm">
@@ -862,9 +879,8 @@ tailwind.config = {
                   <th class="sortable sort-desc text-left px-5 py-3.5 font-semibold" onclick="sortColumn(this, 'receipts')">
                     <span class="inline-flex items-center">Created<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
                   </th>
-                  <th class="text-center px-5 py-3.5 font-semibold">Drive</th>
-                  <th class="text-center px-3 py-3.5 font-semibold">Edit</th>
-                  <th class="text-center px-3 py-3.5 font-semibold">Statement</th>
+                  <th class="text-center px-3 py-3.5 font-semibold">Details</th>
+                  <th class="claims-drive-col text-center px-5 py-3.5 font-semibold">Drive</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-surface-100">
@@ -876,9 +892,8 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="text-surface-400 italic">Unassigned</span></td>
                   <td class="px-5 py-4"><span class="badge" style="background:#fffbeb;color:#b45309;"><style>.badge[style*='fffbeb']::before{background:#f59e0b;}</style>Awaiting Statement</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">12 May 2026</td>
-                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showClaimDetail('2605-CLM-001')" class="btn-icon mx-auto" title="Claim details"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                  <td class="claims-drive-col px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
                 </tr>
                 <tr class="table-row">
                   <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2605-CLM-002</td>
@@ -888,9 +903,9 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-600">Nurul Huda</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;"><style>.badge[style*='ecfdf5']::before{background:#10b981;}</style>Statement Attached</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">10 May 2026</td>
-                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="View Statement"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showClaimDetail('2605-CLM-002')" class="btn-icon mx-auto" title="Claim details"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                  <td class="claims-drive-col px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  
                 </tr>
                 <tr class="table-row">
                   <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2604-CLM-003</td>
@@ -900,9 +915,8 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-600">Lee Wei Ming</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#fffbeb;color:#b45309;">Awaiting Statement</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">8 May 2026</td>
-                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showClaimDetail('2604-CLM-003')" class="btn-icon mx-auto" title="Claim details"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                  <td class="claims-drive-col px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
                 </tr>
                 <tr class="table-row">
                   <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium whitespace-nowrap">2604-CLM-004</td>
@@ -912,9 +926,9 @@ tailwind.config = {
                   <td class="px-5 py-4 text-surface-600">Siti Aminah</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Statement Attached</span></td>
                   <td class="px-5 py-4 text-surface-400 whitespace-nowrap">5 May 2026</td>
-                  <td class="px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button onclick="showEditClaimForm()" class="btn-icon mx-auto" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
-                  <td class="px-3 py-4 text-center"><button class="btn-icon mx-auto" title="View Statement"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                  <td class="px-3 py-4 text-center"><button onclick="showClaimDetail('2604-CLM-004')" class="btn-icon mx-auto" title="Claim details"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg></button></td>
+                  <td class="claims-drive-col px-5 py-4 text-center"><button class="btn-icon mx-auto" title="Open Google Drive folder"><svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>
+                  
                 </tr>
               </tbody>
             </table>
@@ -1033,6 +1047,273 @@ tailwind.config = {
           </button>
         </div>
       </div>
+
+      <!-- ===== CLAIM DETAIL PAGE ===== -->
+      <div id="claim-detail" class="hidden animate-in">
+        <button onclick="hideClaimDetail()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-4 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Claims
+        </button>
+
+        <!-- Demo role switcher -->
+        <div class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 mb-6 flex flex-col sm:flex-row sm:items-center gap-3">
+          <span class="text-xs font-semibold text-amber-700 uppercase tracking-wider flex-shrink-0">Mock Preview:</span>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="setClaimDetailRole('admin')" class="claim-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800" data-role="admin">Admin / Finance</button>
+            <button onclick="setClaimDetailRole('employee-claimant')" class="claim-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-role="employee-claimant">Employee (Claimant)</button>
+            <button onclick="setClaimDetailRole('employee-other')" class="claim-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors" data-role="employee-other">Employee (Not Claimant)</button>
+          </div>
+        </div>
+
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <div>
+              <h2 class="text-xl font-bold text-surface-900 mb-1">Claim Details</h2>
+              <p id="claim-detail-id" class="font-mono text-sm text-brand-700">2605-CLM-001</p>
+            </div>
+            <span id="claim-detail-status" class="badge" style="background:#fffbeb;color:#b45309;">Awaiting Statement</span>
+          </div>
+          <div class="flex flex-wrap gap-2 self-start">
+            <button id="claim-detail-edit-btn" onclick="showEditClaimForm()" class="btn-secondary flex-shrink-0">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Edit
+            </button>
+            <button id="claim-detail-drive-btn" class="btn-secondary flex-shrink-0">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="15,3 21,3 21,9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="10" y1="14" x2="21" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Open in Drive
+            </button>
+          </div>
+        </div>
+
+        <!-- Overview Card -->
+        <div class="bg-white rounded-xl border border-surface-200 shadow-sm mb-6">
+          <div class="px-6 py-4 border-b border-surface-100">
+            <h3 class="text-sm font-semibold text-surface-900">Overview</h3>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-0">
+            <div class="px-6 py-4 border-b border-surface-100 sm:border-r">
+              <p class="text-xs text-surface-400 mb-1">Period</p>
+              <p class="text-sm font-medium text-surface-800">May 2026</p>
+            </div>
+            <div class="px-6 py-4 border-b border-surface-100">
+              <p class="text-xs text-surface-400 mb-1">Entity</p>
+              <p class="text-sm"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-my</span></p>
+            </div>
+            <div class="px-6 py-4 border-b border-surface-100 sm:border-r">
+              <p class="text-xs text-surface-400 mb-1">Claimant</p>
+              <p class="text-sm text-surface-400 italic">Unassigned</p>
+            </div>
+            <div class="px-6 py-4 border-b border-surface-100">
+              <p class="text-xs text-surface-400 mb-1">Description</p>
+              <p class="text-sm font-medium text-surface-800">Claim for the month of May 2026</p>
+            </div>
+            <div class="px-6 py-4 sm:border-r">
+              <p class="text-xs text-surface-400 mb-1">Created Date</p>
+              <p class="text-sm font-medium text-surface-800">12 May 2026</p>
+            </div>
+            <div class="px-6 py-4">
+              <p class="text-xs text-surface-400 mb-1">Created By</p>
+              <p class="text-sm font-medium text-surface-800">Sarah Chen</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Receipts Summary Card -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Total Receipts</p>
+            <p class="text-3xl font-bold text-surface-900"><span id="claim-summary-count">3</span></p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Total (MYR)</p>
+            <p class="text-3xl font-bold text-surface-900">MYR <span id="claim-summary-local" class="tabular-nums">1,450.00</span></p>
+          </div>
+          <div class="bg-white rounded-xl border border-surface-200 shadow-sm px-5 py-5">
+            <p class="text-xs font-semibold text-surface-400 uppercase tracking-wider mb-2">Total (USD)</p>
+            <p class="text-3xl font-bold text-surface-900">USD <span id="claim-summary-usd" class="tabular-nums">307.40</span></p>
+          </div>
+        </div>
+
+        <!-- Receipts Table -->
+        <div class="bg-white rounded-xl border border-surface-200 shadow-sm">
+          <div class="px-5 py-4 border-b border-surface-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="text-sm font-semibold text-surface-900">Receipts</h3>
+            <button onclick="showAddReceiptForm()" class="btn-primary text-xs !py-2 !px-3">
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              Add Receipt
+            </button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="sortable sort-desc text-left px-5 py-3 font-semibold" onclick="sortColumn(this, 'claim-receipts')">
+                    <span class="inline-flex items-center">Receipt Date<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3 font-semibold" onclick="sortColumn(this, 'claim-receipts')">
+                    <span class="inline-flex items-center">Amount<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3 font-semibold" onclick="sortColumn(this, 'claim-receipts')">
+                    <span class="inline-flex items-center">Department<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="sortable text-left px-5 py-3 font-semibold" onclick="sortColumn(this, 'claim-receipts')">
+                    <span class="inline-flex items-center">Class<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="text-center px-3 py-3 font-semibold">File</th>
+                  <th class="sortable text-left px-5 py-3 font-semibold" onclick="sortColumn(this, 'claim-receipts')">
+                    <span class="inline-flex items-center">Uploaded By<span class="sort-arrows"><svg class="sort-arrow-up" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 0L10 6H0z"/></svg><svg class="sort-arrow-down" width="8" height="5" viewBox="0 0 10 6" fill="currentColor"><path d="M5 6L0 0h10z"/></svg></span></span>
+                  </th>
+                  <th class="text-right px-5 py-3 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="claim-receipt-row table-row" data-uploader="Ahmad Razak">
+                  <td class="px-5 py-3.5 text-surface-600 whitespace-nowrap">10 May 2026</td>
+                  <td class="px-5 py-3.5">
+                    <div class="font-medium text-surface-800">MYR <span class="tabular-nums">650.00</span></div>
+                    <div class="text-xs text-surface-400">≈ USD <span class="tabular-nums">137.80</span></div>
+                  </td>
+                  <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">eng</span></td>
+                  <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">travel</span></td>
+                  <td class="px-3 py-3.5 text-center">
+                    <button class="btn-icon mx-auto" title="View file"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                  <td class="px-5 py-3.5 text-surface-600">Ahmad Razak</td>
+                  <td class="px-5 py-3.5 text-right">
+                    <div class="receipt-actions inline-flex items-center gap-2">
+                      <button onclick="showEditReceiptForm()" class="btn-icon" title="Edit receipt"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button class="btn-icon" title="Delete receipt"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="claim-receipt-row table-row" data-uploader="Ahmad Razak">
+                  <td class="px-5 py-3.5 text-surface-600 whitespace-nowrap">8 May 2026</td>
+                  <td class="px-5 py-3.5">
+                    <div class="font-medium text-surface-800">MYR <span class="tabular-nums">450.00</span></div>
+                    <div class="text-xs text-surface-400">≈ USD <span class="tabular-nums">95.40</span></div>
+                  </td>
+                  <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">eng</span></td>
+                  <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">meals</span></td>
+                  <td class="px-3 py-3.5 text-center">
+                    <button class="btn-icon mx-auto" title="View file"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                  <td class="px-5 py-3.5 text-surface-600">Ahmad Razak</td>
+                  <td class="px-5 py-3.5 text-right">
+                    <div class="receipt-actions inline-flex items-center gap-2">
+                      <button onclick="showEditReceiptForm()" class="btn-icon" title="Edit receipt"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button class="btn-icon" title="Delete receipt"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="claim-receipt-row table-row" data-uploader="Sarah Chen">
+                  <td class="px-5 py-3.5 text-surface-600 whitespace-nowrap">5 May 2026</td>
+                  <td class="px-5 py-3.5">
+                    <div class="font-medium text-surface-800">MYR <span class="tabular-nums">350.00</span></div>
+                    <div class="text-xs text-surface-400">≈ USD <span class="tabular-nums">74.20</span></div>
+                  </td>
+                  <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">sales</span></td>
+                  <td class="px-5 py-3.5"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">office</span></td>
+                  <td class="px-3 py-3.5 text-center">
+                    <button class="btn-icon mx-auto" title="View file"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                  <td class="px-5 py-3.5 text-surface-600">Sarah Chen</td>
+                  <td class="px-5 py-3.5 text-right">
+                    <div class="receipt-actions inline-flex items-center gap-2">
+                      <button onclick="showEditReceiptForm()" class="btn-icon" title="Edit receipt"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                      <button class="btn-icon" title="Delete receipt"><svg width="14" height="14" fill="none" viewBox="0 0 24 24"><polyline points="3,6 5,6 21,6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== ADD / EDIT RECEIPT FORM ===== -->
+      <div id="receipt-form" class="hidden animate-in">
+        <button onclick="hideReceiptForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Claim
+        </button>
+        <div class="max-w-lg">
+          <h2 id="receipt-form-title" class="text-xl font-bold text-surface-900 mb-1">Add Receipt</h2>
+          <p id="receipt-form-subtitle" class="text-sm text-surface-400 mb-8">Upload a receipt and provide its details. The USD value will be calculated automatically.</p>
+
+          <div class="space-y-5">
+            <div>
+              <label class="input-label">Receipt File <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+
+              <!-- Current file (shown in edit mode) -->
+              <div id="receipt-form-current-file" class="hidden mb-3 flex items-center justify-between gap-3 bg-surface-50 border border-surface-200 rounded-lg px-4 py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-surface-800 truncate">receipt_taxi_10may.pdf</p>
+                    <p class="text-xs text-surface-400">Uploaded 10 May 2026 · 0.8 MB</p>
+                  </div>
+                </div>
+                <a href="#" class="text-xs text-brand-600 hover:text-brand-700 font-medium flex-shrink-0">View</a>
+              </div>
+
+              <div class="file-drop">
+                <svg class="mx-auto mb-3 text-surface-300" width="40" height="40" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <p id="receipt-form-file-drop-text" class="text-sm font-medium text-surface-600 mb-1">Drop your receipt here or click to browse</p>
+                <p class="text-xs text-surface-400">PDF, JPG, or PNG — max 10MB</p>
+              </div>
+              <p id="receipt-form-file-help" class="hidden text-xs text-surface-400 mt-1.5">Re-uploading will permanently delete the existing file. Leave blank to keep it.</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="input-label">Receipt Date <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+                <input id="receipt-form-date" type="date" class="input-field">
+              </div>
+              <div>
+                <label class="input-label">Amount <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+                <div class="relative">
+                  <input id="receipt-form-amount" type="number" step="0.01" class="input-field pr-14" placeholder="0.00">
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono font-semibold text-surface-400">MYR</span>
+                </div>
+                <p class="text-xs text-surface-400 mt-1.5">USD equivalent will be calculated automatically.</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="input-label">Department <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+                <select id="receipt-form-department" class="input-field">
+                  <option value="" disabled selected>Select department...</option>
+                  <option>eng — Engineering</option>
+                  <option>sales — Sales</option>
+                  <option>mktg — Marketing</option>
+                  <option>ops — Operations</option>
+                  <option>fin — Finance</option>
+                </select>
+              </div>
+              <div>
+                <label class="input-label">Class <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+                <select id="receipt-form-class" class="input-field">
+                  <option value="" disabled selected>Select class...</option>
+                  <option>travel — Travel & Transport</option>
+                  <option>meals — Meals & Entertainment</option>
+                  <option>office — Office Supplies</option>
+                  <option>software — Software & Licenses</option>
+                  <option>training — Training & Development</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button id="receipt-form-submit" class="btn-primary">Add Receipt</button>
+            <button onclick="hideReceiptForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- ===== STATEMENTS ===== -->
@@ -1113,7 +1394,6 @@ tailwind.config = {
                   <td class="px-5 py-4 text-center">
                     <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
                   </td>
-                  <td class="px-3 py-4 text-center"></td>
                 </tr>
                 <tr class="table-row">
                   <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-002</td>
@@ -1124,7 +1404,6 @@ tailwind.config = {
                   <td class="px-5 py-4 text-center">
                     <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
                   </td>
-                  <td class="px-3 py-4 text-center"></td>
                 </tr>
                 <tr class="table-row">
                   <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-004</td>
@@ -1150,7 +1429,6 @@ tailwind.config = {
                   <td class="px-5 py-4 text-center">
                     <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
                   </td>
-                  <td class="px-3 py-4 text-center"></td>
                 </tr>
                 <tr class="table-row">
                   <td class="px-5 py-4 font-mono text-xs text-brand-700 font-medium">STM-003</td>
@@ -1161,7 +1439,6 @@ tailwind.config = {
                   <td class="px-5 py-4 text-center">
                     <button onclick="showStatementDetail()" class="btn-secondary text-xs !py-2 !px-3">View Details</button>
                   </td>
-                  <td class="px-3 py-4 text-center"></td>
                 </tr>
               </tbody>
             </table>
@@ -1190,36 +1467,63 @@ tailwind.config = {
           Back to Statements
         </button>
         <div class="max-w-lg">
-          <h2 class="text-xl font-bold text-surface-900 mb-1">Upload Statement</h2>
-          <p class="text-sm text-surface-400 mb-8">Upload your credit card statement and link it to an existing claim.</p>
+          <h2 id="statement-form-title" class="text-xl font-bold text-surface-900 mb-1">Upload Statement</h2>
+          <p id="statement-form-subtitle" class="text-sm text-surface-400 mb-8">Upload your credit card statement and link it to an existing claim.</p>
+
+          <!-- Edit-mode warning banner (only shown in edit mode) -->
+          <div id="statement-form-edit-note" class="hidden mb-6 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-2.5">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" class="flex-shrink-0 mt-0.5 text-amber-700"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.8"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <div class="text-xs text-amber-700 leading-relaxed space-y-1.5">
+              <p><strong>Re-uploading a file</strong> will permanently delete the existing statement file from Google Drive.</p>
+              <p><strong>Changing the linked claim</strong> will move the file from the previous claim's folder to the new claim's folder, and revert the old claim to "Awaiting Statement".</p>
+              <p>Either change will reset the verification status to <strong>Pending Verification</strong>.</p>
+            </div>
+          </div>
 
           <div class="space-y-5">
             <div>
-              <label class="input-label">Statement File <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <label class="input-label" id="statement-form-file-label">Statement File <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+
+              <!-- Current file (shown in edit mode) -->
+              <div id="statement-form-current-file" class="hidden mb-3 flex items-center justify-between gap-3 bg-surface-50 border border-surface-200 rounded-lg px-4 py-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
+                    <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14,2 14,8 20,8" stroke="#4263eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-medium text-surface-800 truncate">statement_april2026.pdf</p>
+                    <p class="text-xs text-surface-400">Uploaded 3 May 2026 · 2.1 MB</p>
+                  </div>
+                </div>
+                <a href="#" class="text-xs text-brand-600 hover:text-brand-700 font-medium flex-shrink-0">View</a>
+              </div>
+
               <div class="file-drop">
                 <svg class="mx-auto mb-3 text-surface-300" width="40" height="40" fill="none" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><polyline points="17,8 12,3 7,8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <p class="text-sm font-medium text-surface-600 mb-1">Drop your file here or click to browse</p>
+                <p class="text-sm font-medium text-surface-600 mb-1" id="statement-form-file-drop-text">Drop your file here or click to browse</p>
                 <p class="text-xs text-surface-400">PDF, JPG, or PNG — max 10MB</p>
               </div>
+              <p id="statement-form-file-help" class="hidden text-xs text-surface-400 mt-1.5">Leave blank to keep the existing file.</p>
             </div>
             <div>
               <label class="input-label">Statement Closing Date <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-              <input type="date" class="input-field">
+              <input id="statement-form-date" type="date" class="input-field">
             </div>
             <div>
               <label class="input-label">Link to Claim <span class="text-red-500 font-normal" aria-label="required">*</span></label>
-              <select class="input-field">
+              <select id="statement-form-claim" class="input-field">
                 <option value="" disabled selected>Select a claim...</option>
                 <option>CLM-001 — Client dinner — Q4 review (Ahmad Razak)</option>
                 <option>CLM-003 — Travel — KL to Penang flight (Lee Wei Ming)</option>
+                <option>CLM-006 — Claim for the month of April 2026 (Current)</option>
               </select>
               <p class="text-xs text-surface-400 mt-1.5">Only claims with "Awaiting Statement" status are shown.</p>
             </div>
 
-            <!-- Start verification immediately -->
-            <div class="bg-surface-50 border border-surface-200 rounded-lg px-4 py-3">
+            <!-- Start verification immediately (only shown in upload mode) -->
+            <div id="statement-form-verify-row" class="bg-surface-50 border border-surface-200 rounded-lg px-4 py-3">
               <label class="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" class="mt-0.5 w-4 h-4 rounded border-surface-300 text-brand-600 focus:ring-2 focus:ring-brand-500 cursor-pointer flex-shrink-0">
+                <input id="statement-form-verify" type="checkbox" class="mt-0.5 w-4 h-4 rounded border-surface-300 text-brand-600 focus:ring-2 focus:ring-brand-500 cursor-pointer flex-shrink-0">
                 <div>
                   <p class="text-sm font-medium text-surface-800">Start verification immediately</p>
                   <p class="text-xs text-surface-400 mt-0.5">Queue the statement for verification right after upload. If unchecked, the statement will sit in "Pending Verification" until you start it manually.</p>
@@ -1231,7 +1535,7 @@ tailwind.config = {
           <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
 
           <div class="flex gap-3 mt-4">
-            <button class="btn-primary">Upload Statement</button>
+            <button id="statement-form-submit" class="btn-primary">Upload Statement</button>
             <button onclick="hideStatementsForm()" class="btn-secondary">Cancel</button>
           </div>
         </div>
@@ -1267,6 +1571,11 @@ tailwind.config = {
               <span id="detail-status-badge" class="badge" style="background:#fef2f2;color:#b91c1c;">Failed</span>
             </div>
             <div class="flex flex-wrap gap-2 self-start">
+              <!-- Edit Statement button: always available -->
+              <button onclick="showEditStatementForm()" class="btn-secondary flex-shrink-0">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Edit
+              </button>
               <!-- Start Verification button: only visible when status is Pending Verification -->
               <button id="start-verification-btn" class="btn-primary flex-shrink-0" style="display:none;">
                 <svg width="13" height="13" fill="none" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
@@ -1649,6 +1958,7 @@ tailwind.config = {
                   <th class="text-left px-5 py-3.5 font-semibold">Entity Code</th>
                   <th class="text-left px-5 py-3.5 font-semibold">Entity Name</th>
                   <th class="text-left px-5 py-3.5 font-semibold">Country</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Currency</th>
                   <th class="text-left px-5 py-3.5 font-semibold">Status</th>
                   <th class="text-left px-5 py-3.5 font-semibold">Date Added</th>
                   <th class="text-left px-5 py-3.5 font-semibold">Created By</th>
@@ -1660,6 +1970,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-my</span></td>
                   <td class="px-5 py-4 font-medium text-surface-800">APD Malaysia</td>
                   <td class="px-5 py-4 text-surface-600">🇲🇾 Malaysia</td>
+                  <td class="px-5 py-4 text-surface-600 font-mono text-xs">MYR</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
                   <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
@@ -1671,6 +1982,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-sg</span></td>
                   <td class="px-5 py-4 font-medium text-surface-800">APD Singapore</td>
                   <td class="px-5 py-4 text-surface-600">🇸🇬 Singapore</td>
+                  <td class="px-5 py-4 text-surface-600 font-mono text-xs">SGD</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
                   <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
@@ -1682,6 +1994,7 @@ tailwind.config = {
                   <td class="px-5 py-4"><span class="px-2 py-0.5 bg-brand-50 text-brand-700 text-xs font-mono font-medium rounded">apd-hk</span></td>
                   <td class="px-5 py-4 font-medium text-surface-800">APD Hong Kong</td>
                   <td class="px-5 py-4 text-surface-600">🇭🇰 Hong Kong</td>
+                  <td class="px-5 py-4 text-surface-600 font-mono text-xs">HKD</td>
                   <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
                   <td class="px-5 py-4 text-surface-400">15 Feb 2026</td>
                   <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
@@ -1729,6 +2042,22 @@ tailwind.config = {
                 <option>United Arab Emirates</option>
               </select>
             </div>
+            <div>
+              <label class="input-label">Currency <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <select id="entity-form-currency" class="input-field">
+                <option value="" disabled selected>Select currency...</option>
+                <option>MYR — Malaysian Ringgit</option>
+                <option>SGD — Singapore Dollar</option>
+                <option>HKD — Hong Kong Dollar</option>
+                <option>THB — Thai Baht</option>
+                <option>IDR — Indonesian Rupiah</option>
+                <option>PHP — Philippine Peso</option>
+                <option>VND — Vietnamese Dong</option>
+                <option>AED — UAE Dirham</option>
+                <option>USD — US Dollar</option>
+              </select>
+              <p class="text-xs text-surface-400 mt-1.5">Used as the local currency for all receipts under claims of this entity.</p>
+            </div>
           </div>
 
           <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
@@ -1736,6 +2065,268 @@ tailwind.config = {
           <div class="flex gap-3 mt-4">
             <button id="entity-form-submit" class="btn-primary">Add Entity</button>
             <button onclick="hideAddEntityForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DEPARTMENTS ===== -->
+    <div id="page-departments" class="page">
+      <!-- Departments: List View -->
+      <div id="departments-list" class="animate-in">
+        <div class="page-header flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-surface-900">Departments</h2>
+            <p class="text-sm text-surface-400 mt-0.5">Configure departments used for tagging receipts</p>
+          </div>
+          <button onclick="showAddDepartmentForm()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add Department
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+          <div class="relative flex-1 w-full lg:max-w-sm">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search departments..." class="input-field pl-9 w-full">
+          </div>
+          <select class="input-field w-full lg:w-auto lg:min-w-[140px]">
+            <option>All Statuses</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3.5 font-semibold">Code</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Name</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Status</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Date Added</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Created By</th>
+                  <th class="text-right px-5 py-3.5 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">eng</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Engineering</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditDepartmentForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">sales</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Sales</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditDepartmentForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">mktg</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Marketing</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditDepartmentForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">ops</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Operations</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditDepartmentForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">fin</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Finance</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditDepartmentForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Departments: Add / Edit Form -->
+      <div id="departments-form" class="hidden animate-in">
+        <button onclick="hideDepartmentForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Departments
+        </button>
+        <div class="max-w-lg">
+          <h2 id="department-form-title" class="text-xl font-bold text-surface-900 mb-1">Add New Department</h2>
+          <p id="department-form-subtitle" class="text-sm text-surface-400 mb-8">Configure a new department that can be tagged on receipts.</p>
+
+          <div class="space-y-5">
+            <div>
+              <label class="input-label">Department Code <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="department-form-code" type="text" class="input-field font-mono" placeholder="e.g. legal">
+              <p id="department-form-code-help" class="text-xs text-surface-400 mt-1.5">Lowercase, hyphen-separated. Used in receipt records and reporting.</p>
+            </div>
+            <div>
+              <label class="input-label">Department Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="department-form-name" type="text" class="input-field" placeholder="e.g. Legal & Compliance">
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button id="department-form-submit" class="btn-primary">Add Department</button>
+            <button onclick="hideDepartmentForm()" class="btn-secondary">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CLASSES ===== -->
+    <div id="page-classes" class="page">
+      <!-- Classes: List View -->
+      <div id="classes-list" class="animate-in">
+        <div class="page-header flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-xl font-bold text-surface-900">Classes</h2>
+            <p class="text-sm text-surface-400 mt-0.5">Configure classes (expense categories) used for tagging receipts</p>
+          </div>
+          <button onclick="showAddClassForm()" class="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            Add Class
+          </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col lg:flex-row gap-3 mb-5">
+          <div class="relative flex-1 w-full lg:max-w-sm">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400" width="16" height="16" fill="none" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <input type="text" placeholder="Search classes..." class="input-field pl-9 w-full">
+          </div>
+          <select class="input-field w-full lg:w-auto lg:min-w-[140px]">
+            <option>All Statuses</option>
+            <option>Active</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-xl border border-surface-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-surface-100 text-surface-400 text-xs uppercase tracking-wider">
+                  <th class="text-left px-5 py-3.5 font-semibold">Code</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Name</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Status</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Date Added</th>
+                  <th class="text-left px-5 py-3.5 font-semibold">Created By</th>
+                  <th class="text-right px-5 py-3.5 font-semibold">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-surface-100">
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">travel</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Travel & Transport</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditClassForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">meals</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Meals & Entertainment</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditClassForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">office</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Office Supplies</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditClassForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">software</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Software & Licenses</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditClassForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+                <tr class="table-row">
+                  <td class="px-5 py-4"><span class="px-2 py-0.5 bg-surface-100 text-surface-700 text-xs font-mono font-medium rounded">training</span></td>
+                  <td class="px-5 py-4 font-medium text-surface-800">Training & Development</td>
+                  <td class="px-5 py-4"><span class="badge" style="background:#ecfdf5;color:#047857;">Active</span></td>
+                  <td class="px-5 py-4 text-surface-400">1 Jan 2026</td>
+                  <td class="px-5 py-4 text-surface-400">Sarah Chen</td>
+                  <td class="px-5 py-4 text-right">
+                    <button onclick="showEditClassForm()" class="btn-icon" title="Edit"><svg width="15" height="15" fill="none" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Classes: Add / Edit Form -->
+      <div id="classes-form" class="hidden animate-in">
+        <button onclick="hideClassForm()" class="flex items-center gap-2 text-sm text-surface-400 hover:text-surface-700 mb-6 transition-colors">
+          <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M19 12H5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Back to Classes
+        </button>
+        <div class="max-w-lg">
+          <h2 id="class-form-title" class="text-xl font-bold text-surface-900 mb-1">Add New Class</h2>
+          <p id="class-form-subtitle" class="text-sm text-surface-400 mb-8">Configure a new expense class that can be tagged on receipts.</p>
+
+          <div class="space-y-5">
+            <div>
+              <label class="input-label">Class Code <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="class-form-code" type="text" class="input-field font-mono" placeholder="e.g. utilities">
+              <p id="class-form-code-help" class="text-xs text-surface-400 mt-1.5">Lowercase, hyphen-separated. Used in receipt records and reporting.</p>
+            </div>
+            <div>
+              <label class="input-label">Class Name <span class="text-red-500 font-normal" aria-label="required">*</span></label>
+              <input id="class-form-name" type="text" class="input-field" placeholder="e.g. Utilities & Subscriptions">
+            </div>
+          </div>
+
+          <p class="text-xs text-surface-400 mt-6"><span class="text-red-500">*</span> Indicates a mandatory field.</p>
+
+          <div class="flex gap-3 mt-4">
+            <button id="class-form-submit" class="btn-primary">Add Class</button>
+            <button onclick="hideClassForm()" class="btn-secondary">Cancel</button>
           </div>
         </div>
       </div>
@@ -1925,7 +2516,7 @@ tailwind.config = {
     const navBtn = document.querySelector(`[data-page="${page}"]`);
     if (navBtn) navBtn.classList.add('active');
 
-    const titles = { dashboard: 'Dashboard', receipts: 'Claims — Receipts', statements: 'Claims — Statements', users: 'User Management', entities: 'Entities' };
+    const titles = { dashboard: 'Dashboard', receipts: 'Claims — Receipts', statements: 'Claims — Statements', users: 'User Management', entities: 'Entities', departments: 'Departments', classes: 'Classes' };
     document.getElementById('page-title').textContent = titles[page] || 'Dashboard';
 
     closeMobileSidebar();
@@ -1942,6 +2533,7 @@ tailwind.config = {
     document.getElementById('entity-form-code-help').textContent = 'Lowercase, hyphen-separated. Used in claim IDs and dropdowns.';
     document.getElementById('entity-form-name').value = '';
     document.getElementById('entity-form-country').selectedIndex = 0;
+    document.getElementById('entity-form-currency').selectedIndex = 0;
 
     document.getElementById('entities-list').classList.add('hidden');
     document.getElementById('entities-form').classList.remove('hidden');
@@ -1949,13 +2541,14 @@ tailwind.config = {
   function showEditEntityForm() {
     // Switch to Edit mode (sample pre-filled data)
     document.getElementById('entity-form-title').textContent = 'Edit Entity';
-    document.getElementById('entity-form-subtitle').textContent = 'Update the entity name or country. The entity code cannot be changed.';
+    document.getElementById('entity-form-subtitle').textContent = 'Update the entity name, country, or currency. The entity code cannot be changed.';
     document.getElementById('entity-form-submit').textContent = 'Save Changes';
     document.getElementById('entity-form-code').value = 'apd-my';
     document.getElementById('entity-form-code').disabled = true;
     document.getElementById('entity-form-code-help').textContent = 'Entity code is immutable because it is referenced by existing claim IDs.';
     document.getElementById('entity-form-name').value = 'APD Malaysia';
     document.getElementById('entity-form-country').value = 'Malaysia';
+    document.getElementById('entity-form-currency').value = 'MYR — Malaysian Ringgit';
 
     document.getElementById('entities-list').classList.add('hidden');
     document.getElementById('entities-form').classList.remove('hidden');
@@ -1963,6 +2556,66 @@ tailwind.config = {
   function hideAddEntityForm() {
     document.getElementById('entities-form').classList.add('hidden');
     document.getElementById('entities-list').classList.remove('hidden');
+  }
+
+  // Department form (Add / Edit)
+  function showAddDepartmentForm() {
+    document.getElementById('department-form-title').textContent = 'Add New Department';
+    document.getElementById('department-form-subtitle').textContent = 'Configure a new department that can be tagged on receipts.';
+    document.getElementById('department-form-submit').textContent = 'Add Department';
+    document.getElementById('department-form-code').value = '';
+    document.getElementById('department-form-code').disabled = false;
+    document.getElementById('department-form-code-help').textContent = 'Lowercase, hyphen-separated. Used in receipt records and reporting.';
+    document.getElementById('department-form-name').value = '';
+
+    document.getElementById('departments-list').classList.add('hidden');
+    document.getElementById('departments-form').classList.remove('hidden');
+  }
+  function showEditDepartmentForm() {
+    document.getElementById('department-form-title').textContent = 'Edit Department';
+    document.getElementById('department-form-subtitle').textContent = 'Update the department name. The code cannot be changed.';
+    document.getElementById('department-form-submit').textContent = 'Save Changes';
+    document.getElementById('department-form-code').value = 'eng';
+    document.getElementById('department-form-code').disabled = true;
+    document.getElementById('department-form-code-help').textContent = 'Department code is immutable because it is referenced by existing receipts.';
+    document.getElementById('department-form-name').value = 'Engineering';
+
+    document.getElementById('departments-list').classList.add('hidden');
+    document.getElementById('departments-form').classList.remove('hidden');
+  }
+  function hideDepartmentForm() {
+    document.getElementById('departments-form').classList.add('hidden');
+    document.getElementById('departments-list').classList.remove('hidden');
+  }
+
+  // Class form (Add / Edit)
+  function showAddClassForm() {
+    document.getElementById('class-form-title').textContent = 'Add New Class';
+    document.getElementById('class-form-subtitle').textContent = 'Configure a new expense class that can be tagged on receipts.';
+    document.getElementById('class-form-submit').textContent = 'Add Class';
+    document.getElementById('class-form-code').value = '';
+    document.getElementById('class-form-code').disabled = false;
+    document.getElementById('class-form-code-help').textContent = 'Lowercase, hyphen-separated. Used in receipt records and reporting.';
+    document.getElementById('class-form-name').value = '';
+
+    document.getElementById('classes-list').classList.add('hidden');
+    document.getElementById('classes-form').classList.remove('hidden');
+  }
+  function showEditClassForm() {
+    document.getElementById('class-form-title').textContent = 'Edit Class';
+    document.getElementById('class-form-subtitle').textContent = 'Update the class name. The code cannot be changed.';
+    document.getElementById('class-form-submit').textContent = 'Save Changes';
+    document.getElementById('class-form-code').value = 'travel';
+    document.getElementById('class-form-code').disabled = true;
+    document.getElementById('class-form-code-help').textContent = 'Class code is immutable because it is referenced by existing receipts.';
+    document.getElementById('class-form-name').value = 'Travel & Transport';
+
+    document.getElementById('classes-list').classList.add('hidden');
+    document.getElementById('classes-form').classList.remove('hidden');
+  }
+  function hideClassForm() {
+    document.getElementById('classes-form').classList.add('hidden');
+    document.getElementById('classes-list').classList.remove('hidden');
   }
 
   // Nav groups
@@ -2034,7 +2687,123 @@ tailwind.config = {
     });
   }
 
-  // Receipts form toggle - supports Add and Edit modes
+  // Claim Detail page
+  function showClaimDetail(claimId) {
+    if (claimId) {
+      document.getElementById('claim-detail-id').textContent = claimId;
+    }
+    document.getElementById('receipts-list').classList.add('hidden');
+    document.getElementById('receipts-empty').classList.add('hidden');
+    document.getElementById('receipts-form').classList.add('hidden');
+    document.getElementById('receipt-form').classList.add('hidden');
+    document.getElementById('claim-detail').classList.remove('hidden');
+    // Reset to admin/finance role view on each open
+    setClaimDetailRole('admin');
+  }
+  function hideClaimDetail() {
+    document.getElementById('claim-detail').classList.add('hidden');
+    if (emptyMode) {
+      document.getElementById('receipts-empty').classList.remove('hidden');
+    } else {
+      document.getElementById('receipts-list').classList.remove('hidden');
+    }
+  }
+
+  // Role-based view toggle on the Claims list table (mock preview)
+  // Hides the Drive column for Employee role (only Admin/Finance can see Drive links).
+  function setClaimsListRole(role) {
+    const driveCells = document.querySelectorAll('.claims-drive-col');
+    const isAdmin = (role === 'admin');
+    driveCells.forEach(cell => {
+      cell.style.display = isAdmin ? '' : 'none';
+    });
+
+    // Toggle button visual state
+    document.querySelectorAll('.claims-list-role-toggle').forEach(btn => {
+      if (btn.dataset.role === role) {
+        btn.className = 'claims-list-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800';
+      } else {
+        btn.className = 'claims-list-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-white text-surface-600 border-surface-200 hover:bg-surface-50';
+      }
+    });
+  }
+
+  // Role-based view toggle on the Claim Detail page (mock preview)
+  // Models three scenarios:
+  //   'admin'              → Admin/Finance: full access (Edit, Drive, all receipts, all actions)
+  //   'employee-claimant'  → Employee who IS the claimant on this claim (current sample: Ahmad Razak).
+  //                          Sees everything except Edit and Open in Drive buttons.
+  //                          Can edit/delete only their own uploaded receipts.
+  //   'employee-other'     → Employee who is NOT the claimant (current sample: Sarah Chen).
+  //                          Sees only receipts they uploaded themselves. No Edit/Drive buttons.
+  function setClaimDetailRole(role) {
+    const editBtn = document.getElementById('claim-detail-edit-btn');
+    const driveBtn = document.getElementById('claim-detail-drive-btn');
+    const rows = document.querySelectorAll('#claim-detail .claim-receipt-row');
+    const summaryCount = document.getElementById('claim-summary-count');
+    const summaryLocal = document.getElementById('claim-summary-local');
+    const summaryUsd = document.getElementById('claim-summary-usd');
+
+    // The "current logged-in user" depends on the role being previewed
+    const currentUserByRole = {
+      'admin': 'Sarah Chen',               // Admin/Finance — but bypasses the ownership check anyway
+      'employee-claimant': 'Ahmad Razak',  // Employee who is also the claimant
+      'employee-other': 'Sarah Chen'       // Employee viewing someone else's claim
+    };
+    const currentUser = currentUserByRole[role];
+    const isAdmin = (role === 'admin');
+
+    // Toggle Edit & Drive buttons (Admin/Finance only)
+    editBtn.style.display = isAdmin ? '' : 'none';
+    driveBtn.style.display = isAdmin ? '' : 'none';
+
+    // Filter rows + toggle row-level edit/delete
+    let visibleCount = 0;
+    let totalLocal = 0;
+    let totalUsd = 0;
+    rows.forEach(row => {
+      const uploader = row.dataset.uploader;
+      const isOwn = (uploader === currentUser);
+
+      // Visibility: non-claimant employee sees only their own receipts; everyone else sees all
+      const shouldShowRow = (role !== 'employee-other') || isOwn;
+      row.style.display = shouldShowRow ? '' : 'none';
+
+      // Row-level actions: admin always; otherwise own rows only
+      const actionsDiv = row.querySelector('.receipt-actions');
+      if (actionsDiv) {
+        actionsDiv.style.display = (isAdmin || isOwn) ? '' : 'none';
+      }
+
+      if (shouldShowRow) {
+        visibleCount++;
+        // Pull amounts from the row for summary recalc
+        const amountCell = row.children[1];
+        if (amountCell) {
+          const localMatch = amountCell.textContent.match(/MYR\s*([\d,]+\.?\d*)/);
+          const usdMatch = amountCell.textContent.match(/USD\s*([\d,]+\.?\d*)/);
+          if (localMatch) totalLocal += parseFloat(localMatch[1].replace(/,/g, ''));
+          if (usdMatch) totalUsd += parseFloat(usdMatch[1].replace(/,/g, ''));
+        }
+      }
+    });
+
+    // Update summary card
+    summaryCount.textContent = visibleCount;
+    summaryLocal.textContent = totalLocal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    summaryUsd.textContent = totalUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+    // Update toggle button visual state
+    document.querySelectorAll('.claim-role-toggle').forEach(btn => {
+      if (btn.dataset.role === role) {
+        btn.className = 'claim-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-surface-800 text-white border-surface-800';
+      } else {
+        btn.className = 'claim-role-toggle text-xs px-3 py-1.5 rounded-full border font-medium transition-colors bg-white text-surface-600 border-surface-200 hover:bg-surface-50';
+      }
+    });
+  }
+
+  // Receipts form toggle - supports Add and Edit modes (for Claims)
   function showReceiptsForm() {
     // Reset to Add (New Claim) mode
     document.getElementById('claim-form-title').textContent = 'New Claim';
@@ -2056,9 +2825,15 @@ tailwind.config = {
 
     document.getElementById('receipts-list').classList.add('hidden');
     document.getElementById('receipts-empty').classList.add('hidden');
+    document.getElementById('claim-detail').classList.add('hidden');
     document.getElementById('receipts-form').classList.remove('hidden');
   }
+  // Track whether we came from the detail page so we can return there
+  let editClaimFromDetail = false;
   function showEditClaimForm() {
+    // Detect context - if detail page is visible, mark as such
+    editClaimFromDetail = !document.getElementById('claim-detail').classList.contains('hidden');
+
     // Switch to Edit mode (sample pre-filled data)
     document.getElementById('claim-form-title').textContent = 'Edit Claim';
     document.getElementById('claim-form-subtitle').textContent = 'Update the description or claimant for this claim.';
@@ -2079,19 +2854,100 @@ tailwind.config = {
 
     document.getElementById('receipts-list').classList.add('hidden');
     document.getElementById('receipts-empty').classList.add('hidden');
+    document.getElementById('claim-detail').classList.add('hidden');
     document.getElementById('receipts-form').classList.remove('hidden');
   }
   function hideReceiptsForm() {
     document.getElementById('receipts-form').classList.add('hidden');
-    if (emptyMode) {
+    if (editClaimFromDetail) {
+      editClaimFromDetail = false;
+      document.getElementById('claim-detail').classList.remove('hidden');
+    } else if (emptyMode) {
       document.getElementById('receipts-empty').classList.remove('hidden');
     } else {
       document.getElementById('receipts-list').classList.remove('hidden');
     }
   }
 
-  // Statements form toggle
+  // Receipt (individual) form - Add and Edit modes
+  function showAddReceiptForm() {
+    document.getElementById('receipt-form-title').textContent = 'Add Receipt';
+    document.getElementById('receipt-form-subtitle').textContent = 'Upload a receipt and provide its details. The USD value will be calculated automatically.';
+    document.getElementById('receipt-form-submit').textContent = 'Add Receipt';
+    document.getElementById('receipt-form-current-file').classList.add('hidden');
+    document.getElementById('receipt-form-file-help').classList.add('hidden');
+    document.getElementById('receipt-form-file-drop-text').textContent = 'Drop your receipt here or click to browse';
+
+    // Reset values
+    document.getElementById('receipt-form-date').value = '';
+    document.getElementById('receipt-form-amount').value = '';
+    document.getElementById('receipt-form-department').selectedIndex = 0;
+    document.getElementById('receipt-form-class').selectedIndex = 0;
+
+    document.getElementById('claim-detail').classList.add('hidden');
+    document.getElementById('receipt-form').classList.remove('hidden');
+  }
+  function showEditReceiptForm() {
+    document.getElementById('receipt-form-title').textContent = 'Edit Receipt';
+    document.getElementById('receipt-form-subtitle').textContent = 'Update the receipt details. Re-uploading the file will replace the existing one.';
+    document.getElementById('receipt-form-submit').textContent = 'Save Changes';
+    document.getElementById('receipt-form-current-file').classList.remove('hidden');
+    document.getElementById('receipt-form-file-help').classList.remove('hidden');
+    document.getElementById('receipt-form-file-drop-text').textContent = 'Drop a new file here to replace, or click to browse';
+
+    // Pre-fill sample data
+    document.getElementById('receipt-form-date').value = '2026-05-10';
+    document.getElementById('receipt-form-amount').value = '650.00';
+    document.getElementById('receipt-form-department').value = 'eng — Engineering';
+    document.getElementById('receipt-form-class').value = 'travel — Travel & Transport';
+
+    document.getElementById('claim-detail').classList.add('hidden');
+    document.getElementById('receipt-form').classList.remove('hidden');
+  }
+  function hideReceiptForm() {
+    document.getElementById('receipt-form').classList.add('hidden');
+    document.getElementById('claim-detail').classList.remove('hidden');
+  }
+
+  // Statements form toggle - supports Upload and Edit modes
   function showStatementsForm() {
+    // Reset to Upload mode
+    document.getElementById('statement-form-title').textContent = 'Upload Statement';
+    document.getElementById('statement-form-subtitle').textContent = 'Upload your credit card statement and link it to an existing claim.';
+    document.getElementById('statement-form-submit').textContent = 'Upload Statement';
+    document.getElementById('statement-form-edit-note').classList.add('hidden');
+    document.getElementById('statement-form-current-file').classList.add('hidden');
+    document.getElementById('statement-form-file-help').classList.add('hidden');
+    document.getElementById('statement-form-file-drop-text').textContent = 'Drop your file here or click to browse';
+    document.getElementById('statement-form-verify-row').classList.remove('hidden');
+
+    // Reset values
+    document.getElementById('statement-form-date').value = '';
+    document.getElementById('statement-form-claim').selectedIndex = 0;
+    document.getElementById('statement-form-verify').checked = false;
+
+    document.getElementById('statements-list').classList.add('hidden');
+    document.getElementById('statements-empty').classList.add('hidden');
+    document.getElementById('statements-detail').classList.add('hidden');
+    document.getElementById('statements-form').classList.remove('hidden');
+  }
+  function showEditStatementForm() {
+    // Switch to Edit mode
+    document.getElementById('statement-form-title').textContent = 'Edit Statement';
+    document.getElementById('statement-form-subtitle').textContent = 'Update the statement file or details. Re-uploading will reset verification.';
+    document.getElementById('statement-form-submit').textContent = 'Save Changes';
+    document.getElementById('statement-form-edit-note').classList.remove('hidden');
+    document.getElementById('statement-form-current-file').classList.remove('hidden');
+    document.getElementById('statement-form-file-help').classList.remove('hidden');
+    document.getElementById('statement-form-file-drop-text').textContent = 'Drop a new file here to replace, or click to browse';
+
+    // Hide the verify-immediately row in edit mode (verification has its own flow)
+    document.getElementById('statement-form-verify-row').classList.add('hidden');
+
+    // Pre-fill sample data (STM-004 / CLM-006)
+    document.getElementById('statement-form-date').value = '2026-04-30';
+    document.getElementById('statement-form-claim').value = 'CLM-006 — Claim for the month of April 2026 (Current)';
+
     document.getElementById('statements-list').classList.add('hidden');
     document.getElementById('statements-empty').classList.add('hidden');
     document.getElementById('statements-detail').classList.add('hidden');

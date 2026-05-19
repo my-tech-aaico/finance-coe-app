@@ -155,7 +155,7 @@ export function Sidebar({ role }: SidebarProps) {
         )}
 
         {/* Admin Group */}
-        {(canAccess(role, "/admin/users") || canAccess(role, "/admin/entities")) && (
+        {(canAccess(role, "/admin/users") || canAccess(role, "/admin/entities") || canAccess(role, "/admin/departments") || canAccess(role, "/admin/classes")) && (
           <div className="pt-3">
             <button
               onClick={() => setAdminOpen(!adminOpen)}
@@ -229,6 +229,31 @@ export function Sidebar({ role }: SidebarProps) {
                       />
                     </svg>
                     <span>Entities</span>
+                  </Link>
+                )}
+                {canAccess(role, "/admin/departments") && (
+                  <Link
+                    href="/admin/departments"
+                    className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6 ${isActive("/admin/departments") ? "active" : "text-surface-600"}`}
+                  >
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                      <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="1.8" />
+                      <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                    </svg>
+                    <span>Departments</span>
+                  </Link>
+                )}
+                {canAccess(role, "/admin/classes") && (
+                  <Link
+                    href="/admin/classes"
+                    className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6 ${isActive("/admin/classes") ? "active" : "text-surface-600"}`}
+                  >
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                      <rect x="2" y="7" width="20" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
+                      <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <span>Classes</span>
                   </Link>
                 )}
               </div>

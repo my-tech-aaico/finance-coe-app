@@ -101,3 +101,77 @@ export async function createClaimFolders(displayId: string): Promise<ClaimFolder
     throw err;
   }
 }
+
+export async function uploadReceiptFile(
+  parentFolderId: string,
+  filename: string,
+  file: File,
+): Promise<{ fileId: string; webViewLink: string }> {
+  const drive = getDriveClient();
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const res = await drive.files.create({
+    requestBody: {
+      name: filename,
+      parents: [parentFolderId],
+    },
+    media: {
+      mimeType: file.type,
+      body: bufferToStream(buffer),
+    },
+    fields: "id, webViewLink",
+    supportsAllDrives: true,
+  });
+
+  if (!res.data.id || !res.data.webViewLink) {
+    throw new Error("Drive returned an incomplete response (missing id or webViewLink).");
+  }
+  return { fileId: res.data.id, webViewLink: res.data.webViewLink };
+}
+
+function bufferToStream(buffer: Buffer) {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { Readable } = require("node:stream");
+  return Readable.from(buffer);
+}
+
+export async function downloadDriveFile(
+  fileId: string,
+): Promise<{ stream: ReadableStream<Uint8Array>; mimeType: string }> {
+  const drive = getDriveClient();
+
+  const meta = await drive.files.get({
+    fileId,
+    fields: "mimeType",
+    supportsAllDrives: true,
+  });
+  const mimeType = meta.data.mimeType ?? "application/octet-stream";
+
+  const fileResp = await drive.files.get(
+    { fileId, alt: "media", supportsAllDrives: true },
+    { responseType: "stream" },
+  );
+
+  const nodeStream = fileResp.data as unknown as NodeJS.ReadableStream;
+  const stream = new ReadableStream<Uint8Array>({
+    start(controller) {
+      nodeStream.on("data", (chunk: Buffer) => controller.enqueue(new Uint8Array(chunk)));
+      nodeStream.on("end", () => controller.close());
+      nodeStream.on("error", (err: Error) => controller.error(err));
+    },
+    cancel() {
+      (nodeStream as NodeJS.ReadableStream & { destroy?: () => void }).destroy?.();
+    },
+  });
+
+  return { stream, mimeType };
+}
+
+export async function deleteDriveFile(fileId: string): Promise<void> {
+  const drive = getDriveClient();
+  await drive.files.update({
+    fileId,
+    supportsAllDrives: true,
+    requestBody: { trashed: true },
+  });
+}
