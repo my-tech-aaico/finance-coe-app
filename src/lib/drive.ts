@@ -167,6 +167,69 @@ export async function downloadDriveFile(
   return { stream, mimeType };
 }
 
+export async function downloadDriveFileAsBuffer(
+  fileId: string,
+): Promise<{ buffer: Buffer; mimeType: string }> {
+  // Buffer the file (≤10MB) so the presigned PUT has a known Content-Length and
+  // we avoid duplex/streaming pitfalls. See opus-api.md §4.
+  const { stream, mimeType } = await downloadDriveFile(fileId);
+  const buffer = Buffer.from(await new Response(stream).arrayBuffer());
+  return { buffer, mimeType };
+}
+
+function escapeDriveQueryValue(value: string): string {
+  // Escape backslashes and single quotes for a Drive `q` string literal.
+  return value.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+}
+
+export async function uploadDriveFileFromBuffer(
+  parentFolderId: string,
+  filename: string,
+  buffer: Buffer,
+  mimeType: string,
+): Promise<{ fileId: string; webViewLink: string }> {
+  const drive = getDriveClient();
+
+  // Overwrite-by-name (opus-api.md §8.2): the result filename is deterministic and
+  // Opus reuses it across retries, so update the existing file's content in place
+  // rather than creating duplicates.
+  const existing = await drive.files.list({
+    q: `name = '${escapeDriveQueryValue(filename)}' and '${escapeDriveQueryValue(
+      parentFolderId,
+    )}' in parents and trashed = false`,
+    fields: "files(id)",
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+    pageSize: 1,
+  });
+
+  const existingId = existing.data.files?.[0]?.id;
+
+  if (existingId) {
+    const res = await drive.files.update({
+      fileId: existingId,
+      media: { mimeType, body: bufferToStream(buffer) },
+      fields: "id, webViewLink",
+      supportsAllDrives: true,
+    });
+    if (!res.data.id || !res.data.webViewLink) {
+      throw new Error("Drive returned an incomplete response on update (missing id or webViewLink).");
+    }
+    return { fileId: res.data.id, webViewLink: res.data.webViewLink };
+  }
+
+  const res = await drive.files.create({
+    requestBody: { name: filename, parents: [parentFolderId] },
+    media: { mimeType, body: bufferToStream(buffer) },
+    fields: "id, webViewLink",
+    supportsAllDrives: true,
+  });
+  if (!res.data.id || !res.data.webViewLink) {
+    throw new Error("Drive returned an incomplete response (missing id or webViewLink).");
+  }
+  return { fileId: res.data.id, webViewLink: res.data.webViewLink };
+}
+
 export async function deleteDriveFile(fileId: string): Promise<void> {
   const drive = getDriveClient();
   await drive.files.update({

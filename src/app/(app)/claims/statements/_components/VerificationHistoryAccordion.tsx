@@ -15,6 +15,7 @@ export type AttemptRow = {
   status: AttemptStatus;
   opusJobId: string | null;
   opusResponse: unknown;
+  remarks: string | null;
   triggeredByName: string | null;
   triggerSource: TriggerSource;
   createdAt: Date;
@@ -157,6 +158,32 @@ function AttemptItem({
                 }}
               >
                 This response was generated against an earlier version of the statement. The current file or claim link was updated on {lastDestructiveEditAt && formatTimestamp(new Date(lastDestructiveEditAt))}.
+              </div>
+            )}
+
+            {attempt.remarks && attempt.remarks.trim() !== "" && (
+              <div
+                style={{
+                  background: panel.background,
+                  border: `1px solid ${panel.border}`,
+                  borderRadius: 8,
+                  padding: "14px 16px",
+                  marginBottom: 12,
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    color: panel.color,
+                    marginBottom: 8,
+                  }}
+                >
+                  Remarks
+                </p>
+                <p style={{ fontSize: 13, color: panel.color, margin: 0 }}>{attempt.remarks}</p>
               </div>
             )}
 

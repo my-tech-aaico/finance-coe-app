@@ -59,6 +59,7 @@ export default async function StatementDetailPage({
       status: statementVerificationAttempt.status,
       opusJobId: statementVerificationAttempt.opusJobId,
       opusResponse: statementVerificationAttempt.opusResponse,
+      remarks: statementVerificationAttempt.remarks,
       triggerSource: statementVerificationAttempt.triggerSource,
       createdAt: statementVerificationAttempt.createdAt,
       triggeredByName: userTable.name,

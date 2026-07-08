@@ -31,6 +31,7 @@ export const statementVerificationAttempt = pgTable(
     status: statementVerificationAttemptStatusEnum("status").notNull(),
     opusJobId: text("opus_job_id"),
     opusResponse: jsonb("opus_response"),
+    remarks: text("remarks"),
     triggeredBy: text("triggered_by").references(() => user.id),
     triggerSource:
       statementVerificationTriggerSourceEnum("trigger_source").notNull(),

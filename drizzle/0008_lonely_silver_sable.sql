@@ -1,0 +1,1 @@
+ALTER TABLE "statement_verification_attempt" ADD COLUMN "remarks" text;

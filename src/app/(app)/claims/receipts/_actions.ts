@@ -51,7 +51,8 @@ export async function createClaim(
   let folders;
   try {
     folders = await createClaimFolders(displayId);
-  } catch {
+  } catch (err) {
+    console.error(`Drive folder creation failed for claim ${displayId}:`, err);
     return { error: "Could not provision Google Drive folders. Please try again." };
   }
 
