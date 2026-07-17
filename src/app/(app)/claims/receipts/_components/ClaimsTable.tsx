@@ -196,13 +196,15 @@ export function ClaimsTable({ claims, total, page, filters, isAdmin, isAdminOrFi
             <h2 className="text-xl font-bold text-surface-900">Receipts</h2>
             <p className="text-sm text-surface-400 mt-0.5">Manage claim records and Google Drive folder links.</p>
           </div>
-          <Link href="/claims/receipts/new" className="btn-primary">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-              <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-              <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-            New Claim
-          </Link>
+          {isAdminOrFinance && (
+            <Link href="/claims/receipts/new" className="btn-primary">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+                <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+              New Claim
+            </Link>
+          )}
         </div>
         <div className="bg-white rounded-xl border border-surface-200 shadow-sm">
           <div className="flex flex-col items-center justify-center py-20 text-center px-4">
@@ -213,9 +215,13 @@ export function ClaimsTable({ claims, total, page, filters, isAdmin, isAdminOrFi
             </div>
             <p className="text-surface-900 font-semibold mb-1">No claims yet</p>
             <p className="text-sm text-surface-400 mb-5" style={{ maxWidth: 340 }}>
-              Create your first claim to generate a receipt folder and start the verification process.
+              {isAdminOrFinance
+                ? "Create your first claim to generate a receipt folder and start the verification process."
+                : "No claims are assigned to you yet."}
             </p>
-            <Link href="/claims/receipts/new" className="btn-primary">Create First Claim</Link>
+            {isAdminOrFinance && (
+              <Link href="/claims/receipts/new" className="btn-primary">Create First Claim</Link>
+            )}
           </div>
         </div>
       </>
@@ -230,13 +236,15 @@ export function ClaimsTable({ claims, total, page, filters, isAdmin, isAdminOrFi
           <h2 className="text-xl font-bold text-surface-900">Receipts</h2>
           <p className="text-sm text-surface-400 mt-0.5">Manage claim records and Google Drive folder links.</p>
         </div>
-        <Link href="/claims/receipts/new" className="btn-primary">
-          <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
-            <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-          New Claim
-        </Link>
+        {isAdminOrFinance && (
+          <Link href="/claims/receipts/new" className="btn-primary">
+            <svg width="16" height="16" fill="none" viewBox="0 0 24 24">
+              <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            New Claim
+          </Link>
+        )}
       </div>
 
       {/* Filters */}

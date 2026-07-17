@@ -3,6 +3,8 @@ export * from "./entity";
 export * from "./claim";
 export * from "./department";
 export * from "./class";
+export * from "./teamSplit";
+export * from "./projectCode";
 export * from "./fxRate";
 export * from "./receipt";
 export * from "./statement";

@@ -2,22 +2,19 @@ import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
 import { claim, user } from "@/db/schema";
-import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { UploadStatementForm } from "./UploadStatementForm";
 
 export default async function NewStatementPage() {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  await requireRole(["admin", "finance", "credit_card_holder"]);
 
-  // Eligible claims:
+  // v2 eligible claims:
   //   - status = 'awaiting_statement'
-  //   - claimantId IS NOT NULL
   //   - deletedAt IS NULL
-  //   - if Employee: claimantId = actor.id
+  // A claimant is NOT required, and CCH/Finance/Admin see all such claims (spec §6.1).
   const conditions = [
     eq(claim.status, "awaiting_statement"),
-    isNotNull(claim.claimantId),
     isNull(claim.deletedAt),
-    actor.role === "employee" ? eq(claim.claimantId, actor.id) : undefined,
   ].filter(Boolean) as Parameters<typeof and>[0][];
 
   const claims = await db
@@ -33,7 +30,6 @@ export default async function NewStatementPage() {
     .orderBy(sql`${claim.displayId} ASC`);
 
   if (claims.length === 0) {
-    const isEmployee = actor.role === "employee";
     return (
       <div className="animate-in">
         <Link
@@ -57,19 +53,12 @@ export default async function NewStatementPage() {
               </svg>
             </div>
             <p className="text-surface-900 font-semibold mb-1">
-              {isEmployee ? "No eligible claims yet" : "No claims awaiting a statement"}
+              No claims awaiting a statement
             </p>
             <p className="text-sm text-surface-400 mb-5" style={{ maxWidth: 380 }}>
-              {isEmployee
-                ? "You don't have any claims that are awaiting a statement. Ask Finance to assign you to a claim, then come back here to upload."
-                : "There are no claims with “Awaiting Statement” status and a claimant assigned. Either create a new claim or assign a claimant to an existing one."}
+              There are no claims with “Awaiting Statement” status. Create a new claim (or ask Finance to) before uploading a statement.
             </p>
             <div className="flex items-center gap-3">
-              {!isEmployee && (
-                <Link href="/claims/receipts/new" className="btn-primary">
-                  Create a Claim
-                </Link>
-              )}
               <Link href="/claims/statements" className="btn-secondary">
                 Back to Statements
               </Link>

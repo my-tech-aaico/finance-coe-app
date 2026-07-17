@@ -20,7 +20,7 @@ export default async function StatementDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ notice?: string }>;
 }) {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const { id } = await params;
   const sp = await searchParams;
 
@@ -35,21 +35,15 @@ export default async function StatementDetailPage({
   });
   if (!stmt) notFound();
 
-  // Scoping (§5.1 OR rule).
+  // v2 scoping: Admin/Finance see all; CCH sees only statements they uploaded.
   const isAdminOrFinance = actor.role === "admin" || actor.role === "finance";
-  const canSee =
-    isAdminOrFinance ||
-    stmt.uploadedBy === actor.id ||
-    stmt.claim.claimantId === actor.id;
+  const canSee = isAdminOrFinance || stmt.uploadedBy === actor.id;
   if (!canSee) notFound();
 
-  // Edit permission (§5.1 — OR for Employees).
-  const canEdit =
-    isAdminOrFinance ||
-    stmt.uploadedBy === actor.id ||
-    stmt.claim.claimantId === actor.id;
+  // Edit permission: Admin/Finance or the uploader (CCH).
+  const canEdit = isAdminOrFinance || stmt.uploadedBy === actor.id;
 
-  // Hard-delete permission (§5.1 — Admin/Finance only).
+  // Hard-delete permission: Admin/Finance only (CCH delete deferred — §6.8).
   const canDelete = isAdminOrFinance;
 
   // Load attempts with their triggering user's name.

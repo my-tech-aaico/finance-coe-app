@@ -2,13 +2,13 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
-import { claim, department, class_ } from "@/db/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { claim, department, class_, teamSplit } from "@/db/schema";
+import { eq, and, isNull, inArray } from "drizzle-orm";
 import { ClaimOverviewCard } from "./_components/ClaimOverviewCard";
 import { ReceiptsSummaryCard } from "./_components/ReceiptsSummaryCard";
 import { ReceiptsTable } from "./_components/ReceiptsTable";
 import { ReceiptForm } from "./_components/ReceiptForm";
-import { resolveDetailViewMode, loadReceipts } from "./_lib/access";
+import { resolveDetailViewMode, loadReceipts, canViewClaim } from "./_lib/access";
 
 export default async function ClaimDetailPage({
   params,
@@ -17,7 +17,7 @@ export default async function ClaimDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ action?: string; rid?: string }>;
 }) {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   const { id } = await params;
   const sp = await searchParams;
 
@@ -31,16 +31,13 @@ export default async function ClaimDetailPage({
   });
   if (!claimRow) notFound();
 
-  const mode = await resolveDetailViewMode(actor, claimRow);
+  // Employees may only open claims they are the claimant of.
+  if (!canViewClaim(actor, claimRow)) notFound();
 
-  const receipts = await loadReceipts(claimRow.id, mode, actor);
+  const mode = resolveDetailViewMode(actor);
+  const receipts = await loadReceipts(claimRow.id, actor);
 
-  const summary = {
-    count: receipts.length,
-    totalLocal: receipts.reduce((sum, r) => sum + Number(r.amountLocal), 0),
-    totalUsd: receipts.reduce((sum, r) => sum + Number(r.amountUsd), 0),
-    currency: claimRow.entity.currency,
-  };
+  const summary = { count: receipts.length };
 
   const action = sp.action;
   const editingReceipt =
@@ -51,6 +48,8 @@ export default async function ClaimDetailPage({
   // Load dropdowns for the form
   let departments: { id: string; code: string; name: string; status: "active" | "inactive" }[] = [];
   let classes: { id: string; code: string; name: string; status: "active" | "inactive" }[] = [];
+  let teamSplits: { id: string; code: string; name: string; classId: string }[] = [];
+  let projectCodes: { id: string; code: string; name: string }[] = [];
   if (action === "add-receipt" || action === "edit-receipt") {
     departments = await db.query.department.findMany({
       where: (d, { eq: e }) => e(d.status, "active"),
@@ -77,6 +76,38 @@ export default async function ClaimDetailPage({
         if (inactive) classes = [...classes, inactive];
       }
     }
+    // Load only active team splits for all classes in the dropdown.
+    const classIds = classes.map((c) => c.id);
+    if (classIds.length > 0) {
+      teamSplits = await db.query.teamSplit.findMany({
+        where: and(inArray(teamSplit.classId, classIds), eq(teamSplit.status, "active")),
+        orderBy: (t, { asc }) => [asc(t.code)],
+      });
+    }
+    // If editing and the currently assigned split is inactive, inject it so the form
+    // can display it as "(inactive)" and the server will accept it unchanged.
+    if (editingReceipt?.teamSplitId) {
+      const hasCurrentSplit = teamSplits.some((s) => s.id === editingReceipt.teamSplitId);
+      if (!hasCurrentSplit) {
+        const inactiveSplit = await db.query.teamSplit.findFirst({
+          where: eq(teamSplit.id, editingReceipt.teamSplitId),
+        });
+        if (inactiveSplit) {
+          teamSplits = [
+            ...teamSplits,
+            {
+              id: inactiveSplit.id,
+              code: inactiveSplit.code,
+              name: `${inactiveSplit.name} (inactive)`,
+              classId: inactiveSplit.classId,
+            },
+          ];
+        }
+      }
+    }
+    projectCodes = await db.query.projectCode.findMany({
+      orderBy: (p, { asc }) => [asc(p.code)],
+    });
   }
 
   return (
@@ -93,26 +124,35 @@ export default async function ClaimDetailPage({
       </Link>
 
       <ClaimOverviewCard claim={claimRow} mode={mode} />
-      <ReceiptsSummaryCard summary={summary} mode={mode} />
+      <ReceiptsSummaryCard summary={summary} />
 
       {action === "add-receipt" ? (
         <ReceiptForm
           mode="add"
           claimId={claimRow.id}
           claimDisplayId={claimRow.displayId}
-          entityCurrency={claimRow.entity.currency}
           departments={departments}
           classes={classes}
+          teamSplits={teamSplits}
+          projectCodes={projectCodes}
         />
       ) : action === "edit-receipt" && editingReceipt ? (
         <ReceiptForm
           mode="edit"
           claimId={claimRow.id}
           claimDisplayId={claimRow.displayId}
-          entityCurrency={claimRow.entity.currency}
           departments={departments}
           classes={classes}
-          receipt={editingReceipt}
+          teamSplits={teamSplits}
+          projectCodes={projectCodes}
+          receipt={{
+            id: editingReceipt.id,
+            departmentId: editingReceipt.departmentId,
+            classId: editingReceipt.classId,
+            teamSplitId: editingReceipt.teamSplitId,
+            projectCodeId: editingReceipt.projectCodeId,
+            fileName: editingReceipt.fileName,
+          }}
         />
       ) : (
         <ReceiptsTable

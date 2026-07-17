@@ -51,7 +51,7 @@ export default async function ReceiptsPage({
 }: {
   searchParams: Promise<Search>;
 }) {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1));
 
@@ -62,6 +62,8 @@ export default async function ReceiptsPage({
 
   const conditions = [
     includeDeleted ? undefined : isNull(claim.deletedAt),
+    // Employees see only claims where they are the claimant (spec §3.2).
+    actor.role === "employee" ? eq(claim.claimantId, actor.id) : undefined,
     sp.q
       ? or(
           ilike(claim.displayId, `%${sp.q}%`),

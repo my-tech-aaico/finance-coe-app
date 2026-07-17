@@ -7,15 +7,13 @@ import { DetailViewMode } from "../_lib/access";
 
 type Receipt = {
   id: string;
-  receiptDate: string;
-  amountLocal: string;
-  amountUsd: string;
-  currencyCode: string;
   fileName: string;
   uploadedBy: string;
   uploadedAt: Date;
+  projectCode: string | null;
   department: { code: string; name: string } | null;
   class_: { code: string; name: string } | null;
+  teamSplit: { code: string; name: string } | null;
   uploadedByUser: { name: string } | null;
 };
 
@@ -31,16 +29,33 @@ function canEdit(mode: DetailViewMode, actorId: string, receipt: Receipt): boole
   return receipt.uploadedBy === actorId;
 }
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+function formatUploaded(d: Date): string {
+  return new Date(d).toLocaleString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-function formatAmount(val: string, decimals = 2): string {
-  return Number(val).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+function Chip({ text, bg, color }: { text: string; bg: string; color: string }) {
+  return (
+    <span style={{
+      fontFamily: "monospace",
+      fontSize: 11,
+      fontWeight: 600,
+      background: bg,
+      color,
+      padding: "2px 7px",
+      borderRadius: 5,
+    }}>
+      {text}
+    </span>
+  );
 }
 
-function DeleteButton({ receiptId, fileName, claimId }: { receiptId: string; fileName: string; claimId: string }) {
+function DeleteButton({ receiptId, fileName }: { receiptId: string; fileName: string }) {
   const [, formAction, pending] = useActionState(deleteReceipt, null);
   const [, startTransition] = useTransition();
 
@@ -117,12 +132,13 @@ export function ReceiptsTable({ receipts, mode, actorId, claimId }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-surface-100 bg-surface-50">
-              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Date</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Uploaded</th>
               <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Department</th>
               <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Class</th>
-              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Amount</th>
-              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Uploaded By</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Team Split</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Project Code</th>
               <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">File</th>
+              <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Uploaded By</th>
               <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
@@ -131,42 +147,19 @@ export function ReceiptsTable({ receipts, mode, actorId, claimId }: Props) {
               const editable = canEdit(mode, actorId, r);
               return (
                 <tr key={r.id} className="table-row">
-                  <td className="px-5 py-4 whitespace-nowrap text-surface-700">{formatDate(r.receiptDate)}</td>
+                  <td className="px-5 py-4 whitespace-nowrap text-surface-700">{formatUploaded(r.uploadedAt)}</td>
                   <td className="px-5 py-4">
-                    {r.department ? (
-                      <span style={{
-                        fontFamily: "monospace",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        background: "#eff6ff",
-                        color: "#1d4ed8",
-                        padding: "2px 7px",
-                        borderRadius: 5,
-                      }}>
-                        {r.department.code}
-                      </span>
-                    ) : <span className="text-surface-400">—</span>}
+                    {r.department ? <Chip text={r.department.code} bg="#eff6ff" color="#1d4ed8" /> : <span className="text-surface-400">—</span>}
                   </td>
                   <td className="px-5 py-4">
-                    {r.class_ ? (
-                      <span style={{
-                        fontFamily: "monospace",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        background: "#f0fdf4",
-                        color: "#166534",
-                        padding: "2px 7px",
-                        borderRadius: 5,
-                      }}>
-                        {r.class_.code}
-                      </span>
-                    ) : <span className="text-surface-400">—</span>}
+                    {r.class_ ? <Chip text={r.class_.code} bg="#f0fdf4" color="#166534" /> : <span className="text-surface-400">—</span>}
                   </td>
                   <td className="px-5 py-4">
-                    <div className="font-medium text-surface-800">{r.currencyCode} {formatAmount(r.amountLocal)}</div>
-                    <div className="text-xs text-surface-400">≈ ${formatAmount(r.amountUsd)}</div>
+                    {r.teamSplit ? <Chip text={r.teamSplit.code} bg="#f1f3f7" color="#374151" /> : <span className="text-surface-300">—</span>}
                   </td>
-                  <td className="px-5 py-4 text-surface-600 text-sm">{r.uploadedByUser?.name ?? "—"}</td>
+                  <td className="px-5 py-4">
+                    {r.projectCode ? <Chip text={r.projectCode} bg="#f0f4ff" color="#4263eb" /> : <span className="text-surface-300">—</span>}
+                  </td>
                   <td className="px-5 py-4">
                     <a
                       href={`/claims/receipts/${claimId}/receipts/${r.id}/view`}
@@ -181,6 +174,7 @@ export function ReceiptsTable({ receipts, mode, actorId, claimId }: Props) {
                       </svg>
                     </a>
                   </td>
+                  <td className="px-5 py-4 text-surface-600 text-sm">{r.uploadedByUser?.name ?? "—"}</td>
                   <td className="px-5 py-4">
                     {editable ? (
                       <div className="flex items-center gap-2">
@@ -194,7 +188,7 @@ export function ReceiptsTable({ receipts, mode, actorId, claimId }: Props) {
                             <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         </Link>
-                        <DeleteButton receiptId={r.id} fileName={r.fileName} claimId={claimId} />
+                        <DeleteButton receiptId={r.id} fileName={r.fileName} />
                       </div>
                     ) : (
                       <span className="text-surface-300 text-sm">—</span>

@@ -187,7 +187,7 @@ holds the small **GetJobExecutionStatus** body only (decision 2026-06-15). Extra
      node).
 2. Decode `base64_file_content` to a `Buffer`. **Exactly one** output file is expected.
 3. Detect the file extension from the decoded bytes (magic bytes — §8.1). Final filename =
-   `file_title` + detected extension.
+   `file_title` + `_` + a **per-attempt timestamp** + detected extension (§8.2).
 4. Upload the buffer to the `netsuite_folder_id` Drive folder (fall back to
    `claim.driveNetsuiteFolderId` if the audit value is missing) — see §8.2.
 
@@ -207,8 +207,8 @@ Replicate this logic in TypeScript (reference is the workflow's Python):
 | first ~15 bytes decode as UTF-8 containing `EXTERNALID` / `ID,` / `DATE,` | `.csv` |
 | otherwise               | `` (none) — log the first 4 bytes as hex |
 
-Final filename: take a base name (e.g. the statement `displayId` or a node-provided name)
-and append the detected extension only if it isn't already present.
+Final filename: take a base name (e.g. `file_title`, falling back to the statement
+`displayId`), append a per-attempt timestamp postfix (§8.2), then the detected extension.
 
 ### 8.2 Drive upload of the result
 
@@ -216,12 +216,29 @@ Upload the decoded buffer into the `netsuite_folder_id` folder using a new Drive
 `uploadDriveFileFromBuffer(folderId, name, buffer, mimeType)` (`scheduler.md` §7.5 / §12).
 This is the **only** Drive *write* the schedulers do.
 
-**Overwrite-by-name (idempotent).** Because the name (`file_title` + ext) is deterministic
-and Opus reuses it across retries, the helper must **find a file with that name in the
-folder first**: if one exists, update its content (`drive.files.update` with `media`);
-otherwise create it (`drive.files.create`, mirroring `uploadStatementFile`). This keeps the
-netsuite folder showing exactly one current result per statement, makes concurrent polls
-idempotent, and refreshes the file on a re-verify after an edit (decision 2026-06-15).
+**Timestamped history — one file per successful attempt (decision 2026-07-14).** The
+result filename is `<base>_<timestamp><ext>`, where `<base>` is `file_title` (fallback:
+statement `displayId`) and `<timestamp>` is a **per-attempt** marker derived from the
+verification attempt's `updatedAt` (formatted `YYYYMMDDHHMMSS`, e.g. `20260714153045`).
+Because the postfix is distinct per attempt, each successful verification writes a
+**distinct file** — so a re-verify (Retry Verification, e.g. after adding a receipt) leaves
+the prior result in place and **adds a second file**. The netsuite folder therefore
+**accumulates a history of results, one per successful attempt**, rather than a single
+current file.
+
+The helper still uses **overwrite-by-name** (`drive.files.list` by name → `update` if
+found, else `create`), but its role is now narrower: because the timestamp is sourced from
+the attempt's stable `updatedAt` (not wall-clock at upload), **concurrent re-polls of the
+same attempt** produce the same filename and collapse to one file (idempotency preserved),
+while **separate attempts** get distinct timestamps and thus separate files.
+
+> ⚠️ **Downstream consumers must handle multiple files.** Whatever reads the netsuite
+> folder (the out-of-scope NetSuite import) can no longer assume exactly one result file
+> per statement — it must pick the latest (or process each) accordingly.
+>
+> *Supersedes the earlier 2026-06-15 decision* ("overwrite-by-name keeps exactly one
+> current result per statement; re-verify refreshes the file in place"), which is no longer
+> in effect.
 
 `mimeType` is derived from the detected extension (`.pdf`→`application/pdf`,
 `.xlsx`→`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`,

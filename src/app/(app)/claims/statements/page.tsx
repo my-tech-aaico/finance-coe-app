@@ -53,7 +53,7 @@ export default async function StatementsPage({
 }: {
   searchParams: Promise<Search>;
 }) {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const sp = await searchParams;
   const page = Math.max(1, Number(sp.page ?? 1));
 
@@ -62,14 +62,15 @@ export default async function StatementsPage({
     sp.dateField === "upload" ? "upload" : "statement";
   const dateCol = dateField === "upload" ? statement.uploadDate : statement.statementDate;
 
-  const employeeScope =
-    actor.role === "employee"
-      ? or(eq(statement.uploadedBy, actor.id), eq(claim.claimantId, actor.id))
+  // v2: Credit Card Holders see only statements they uploaded. Admin/Finance see all.
+  const cchScope =
+    actor.role === "credit_card_holder"
+      ? eq(statement.uploadedBy, actor.id)
       : undefined;
 
   const conditions = [
     isNull(statement.deletedAt),
-    employeeScope,
+    cchScope,
     sp.q
       ? or(
           ilike(statement.displayId, `%${sp.q}%`),

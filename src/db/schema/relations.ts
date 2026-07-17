@@ -4,6 +4,8 @@ import { entity } from "./entity";
 import { claim } from "./claim";
 import { department } from "./department";
 import { class_ } from "./class";
+import { teamSplit } from "./teamSplit";
+import { projectCode } from "./projectCode";
 import { receipt } from "./receipt";
 import { statement } from "./statement";
 import { statementVerificationAttempt } from "./statementVerificationAttempt";
@@ -20,6 +22,8 @@ export const receiptRelations = relations(receipt, ({ one }) => ({
   claim: one(claim, { fields: [receipt.claimId], references: [claim.id] }),
   department: one(department, { fields: [receipt.departmentId], references: [department.id] }),
   class_: one(class_, { fields: [receipt.classId], references: [class_.id] }),
+  teamSplit: one(teamSplit, { fields: [receipt.teamSplitId], references: [teamSplit.id] }),
+  projectCodeRef: one(projectCode, { fields: [receipt.projectCodeId], references: [projectCode.id] }),
   uploadedByUser: one(user, { fields: [receipt.uploadedBy], references: [user.id], relationName: "receiptUploadedBy" }),
   updatedByUser: one(user, { fields: [receipt.updatedBy], references: [user.id], relationName: "receiptUpdatedBy" }),
 }));
@@ -29,6 +33,18 @@ export const departmentRelations = relations(department, ({ many }) => ({
 }));
 
 export const classRelations = relations(class_, ({ many }) => ({
+  receipts: many(receipt),
+  teamSplits: many(teamSplit),
+}));
+
+export const teamSplitRelations = relations(teamSplit, ({ one, many }) => ({
+  class_: one(class_, { fields: [teamSplit.classId], references: [class_.id] }),
+  createdByUser: one(user, { fields: [teamSplit.createdBy], references: [user.id], relationName: "teamSplitCreatedBy" }),
+  updatedByUser: one(user, { fields: [teamSplit.updatedBy], references: [user.id], relationName: "teamSplitUpdatedBy" }),
+  receipts: many(receipt),
+}));
+
+export const projectCodeRelations = relations(projectCode, ({ many }) => ({
   receipts: many(receipt),
 }));
 

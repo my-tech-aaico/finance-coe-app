@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { receipt } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { downloadDriveFile } from "@/lib/drive";
-import { resolveDetailViewMode } from "@/app/(app)/claims/receipts/[id]/_lib/access";
+import { canViewReceipt } from "@/app/(app)/claims/receipts/[id]/_lib/access";
 
 export async function GET(
   _req: NextRequest,
@@ -12,7 +12,7 @@ export async function GET(
 ) {
   let actor: Awaited<ReturnType<typeof requireRole>>;
   try {
-    actor = await requireRole(["admin", "finance", "employee"]);
+    actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   } catch {
     return new Response("Unauthorized", { status: 401 });
   }
@@ -28,8 +28,9 @@ export async function GET(
     return new Response("Not found", { status: 404 });
   }
 
-  const mode = await resolveDetailViewMode(actor, row.claim);
-  if (mode === "employee_other" && row.uploadedBy !== actor.id) {
+  // Employees may only stream files for receipts they uploaded (stricter than
+  // claim-level access). Admin/Finance/CCH may stream any receipt on a viewable claim.
+  if (!canViewReceipt(actor, row, row.claim)) {
     return new Response("Forbidden", { status: 403 });
   }
 

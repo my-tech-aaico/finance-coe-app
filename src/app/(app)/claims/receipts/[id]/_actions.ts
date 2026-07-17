@@ -6,9 +6,15 @@ import { redirect } from "next/navigation";
 import { and, eq, isNull } from "drizzle-orm";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
-import { claim, receipt, department, class_ as klass } from "@/db/schema";
+import {
+  claim,
+  receipt,
+  department,
+  class_ as klass,
+  teamSplit,
+  projectCode,
+} from "@/db/schema";
 import { uploadReceiptFile, deleteDriveFile } from "@/lib/drive";
-import { getCurrentRate } from "@/lib/fx";
 
 const FILE_MAX_BYTES = Number(process.env.RECEIPT_FILE_MAX_BYTES ?? 10 * 1024 * 1024);
 const FILE_ALLOWED_TYPES = (
@@ -21,19 +27,55 @@ function sanitizeFilename(name: string): string {
 
 type ActionResult = { error: string } | { ok: true } | null;
 
+// Validate the team split against the selected class using only ACTIVE splits.
+//   - existingTeamSplitId: pass when editing; allows keeping an inactive split unchanged
+//     but ONLY if it still belongs to the same classId (guards against class-change attack).
+async function resolveTeamSplit(
+  classId: string,
+  rawTeamSplitId: string | undefined,
+  existingTeamSplitId?: string | null
+): Promise<{ teamSplitId: string | null } | { error: string }> {
+  const chosen = (rawTeamSplitId ?? "").trim();
+
+  // Submitting the unchanged existing split → allow even if inactive,
+  // but verify it belongs to this classId (guard against class-swap).
+  if (chosen && existingTeamSplitId && chosen === existingTeamSplitId) {
+    const existingSplit = await db.query.teamSplit.findFirst({
+      where: and(eq(teamSplit.id, existingTeamSplitId), eq(teamSplit.classId, classId)),
+    });
+    if (existingSplit) return { teamSplitId: chosen };
+    // Split doesn't belong to the submitted classId — fall through to active validation.
+  }
+
+  const activeSplits = await db.query.teamSplit.findMany({
+    where: and(eq(teamSplit.classId, classId), eq(teamSplit.status, "active")),
+  });
+
+  if (activeSplits.length === 0) {
+    return { teamSplitId: null };
+  }
+  if (!chosen) {
+    return { error: "Team Split is required for the selected class." };
+  }
+  if (!activeSplits.some((s) => s.id === chosen)) {
+    return { error: "Selected team split does not belong to the chosen class." };
+  }
+  return { teamSplitId: chosen };
+}
+
 const CreateReceiptInput = z.object({
   claimId: z.string(),
-  receiptDate: z.string().min(1, "Receipt date is required."),
-  amountLocal: z.coerce.number().positive("Amount must be greater than zero."),
   departmentId: z.string().min(1, "Department is required."),
   classId: z.string().min(1, "Class is required."),
+  teamSplitId: z.string().optional(),
+  projectCodeId: z.string().min(1, "Project Code is required."),
 });
 
 export async function createReceipt(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   const parsed = CreateReceiptInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.errors[0].message };
 
@@ -50,11 +92,14 @@ export async function createReceipt(
 
   const parent = await db.query.claim.findFirst({
     where: and(eq(claim.id, parsed.data.claimId), isNull(claim.deletedAt)),
-    with: { entity: true },
   });
   if (!parent) return { error: "Claim not found." };
 
-  // Any authenticated user (admin, finance, or employee) can add receipts to any visible claim.
+  // Employees may only add receipts to claims they are the claimant of.
+  // Admin/Finance/CCH can add to any claim.
+  if (actor.role === "employee" && parent.claimantId !== actor.id) {
+    return { error: "You can only add receipts to claims assigned to you." };
+  }
 
   const dept = await db.query.department.findFirst({ where: eq(department.id, parsed.data.departmentId) });
   if (!dept || dept.status !== "active") return { error: "Selected department is invalid." };
@@ -62,8 +107,11 @@ export async function createReceipt(
   const cls = await db.query.class_.findFirst({ where: eq(klass.id, parsed.data.classId) });
   if (!cls || cls.status !== "active") return { error: "Selected class is invalid." };
 
-  const { rate, fetchedAt } = await getCurrentRate(parent.entity.currency);
-  const amountUsd = Math.round(parsed.data.amountLocal * rate * 100) / 100;
+  const ts = await resolveTeamSplit(parsed.data.classId, parsed.data.teamSplitId);
+  if ("error" in ts) return { error: ts.error };
+
+  const pc = await db.query.projectCode.findFirst({ where: eq(projectCode.id, parsed.data.projectCodeId) });
+  if (!pc) return { error: "Selected project code is invalid." };
 
   const receiptId = crypto.randomUUID();
   const driveFilename = `${receiptId}_${sanitizeFilename(file.name)}`;
@@ -80,14 +128,11 @@ export async function createReceipt(
     await db.insert(receipt).values({
       id: receiptId,
       claimId: parent.id,
-      receiptDate: parsed.data.receiptDate,
-      amountLocal: String(parsed.data.amountLocal),
-      currencyCode: parent.entity.currency,
-      amountUsd: String(amountUsd),
-      fxRate: String(rate),
-      fxRateFetchedAt: fetchedAt,
       departmentId: parsed.data.departmentId,
       classId: parsed.data.classId,
+      teamSplitId: ts.teamSplitId,
+      projectCodeId: pc.id,
+      projectCode: pc.code, // snapshot
       driveFileId: uploaded.fileId,
       fileUrl: uploaded.webViewLink,
       fileName: file.name,
@@ -109,29 +154,34 @@ export async function createReceipt(
 
 const UpdateReceiptInput = z.object({
   receiptId: z.string(),
-  receiptDate: z.string().min(1, "Receipt date is required."),
-  amountLocal: z.coerce.number().positive("Amount must be greater than zero."),
   departmentId: z.string().min(1, "Department is required."),
   classId: z.string().min(1, "Class is required."),
+  teamSplitId: z.string().optional(),
+  projectCodeId: z.string().min(1, "Project Code is required."),
 });
 
 export async function updateReceipt(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   const parsed = UpdateReceiptInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.errors[0].message };
 
   const existing = await db.query.receipt.findFirst({
     where: eq(receipt.id, parsed.data.receiptId),
-    with: { claim: { with: { entity: true } } },
+    with: { claim: true },
   });
   if (!existing) return { error: "Receipt not found." };
 
-  const canEdit =
-    actor.role === "admin" || actor.role === "finance" || existing.uploadedBy === actor.id;
+  const isOwner = existing.uploadedBy === actor.id;
+  const isAdminFinance = actor.role === "admin" || actor.role === "finance";
+  const canEdit = isAdminFinance || isOwner;
   if (!canEdit) return { error: "You don't have permission to edit this receipt." };
+  // Employees can only touch receipts on claims assigned to them (spec §5.5.1).
+  if (actor.role === "employee" && existing.claim.claimantId !== actor.id) {
+    return { error: "You can only edit receipts on claims assigned to you." };
+  }
 
   const dept = await db.query.department.findFirst({ where: eq(department.id, parsed.data.departmentId) });
   if (!dept) return { error: "Department not found." };
@@ -144,7 +194,11 @@ export async function updateReceipt(
     return { error: "Selected class is inactive." };
   }
 
-  const amountChanged = String(parsed.data.amountLocal) !== existing.amountLocal;
+  const ts = await resolveTeamSplit(parsed.data.classId, parsed.data.teamSplitId, existing.teamSplitId);
+  if ("error" in ts) return { error: ts.error };
+
+  const pc = await db.query.projectCode.findFirst({ where: eq(projectCode.id, parsed.data.projectCodeId) });
+  if (!pc) return { error: "Selected project code is invalid." };
 
   const file = formData.get("file");
   const hasNewFile = file instanceof File && file.size > 0;
@@ -165,22 +219,13 @@ export async function updateReceipt(
     }
   }
 
-  let fxFields: Record<string, unknown> = {};
-  if (amountChanged) {
-    const { rate, fetchedAt } = await getCurrentRate(existing.currencyCode);
-    fxFields = {
-      fxRate: String(rate),
-      fxRateFetchedAt: fetchedAt,
-      amountUsd: String(Math.round(parsed.data.amountLocal * rate * 100) / 100),
-    };
-  }
-
   try {
     await db.update(receipt).set({
-      receiptDate: parsed.data.receiptDate,
-      amountLocal: String(parsed.data.amountLocal),
       departmentId: parsed.data.departmentId,
       classId: parsed.data.classId,
+      teamSplitId: ts.teamSplitId,
+      projectCodeId: pc.id,
+      projectCode: pc.code, // re-snapshot
       ...(newUpload
         ? {
             driveFileId: newUpload.fileId,
@@ -188,7 +233,6 @@ export async function updateReceipt(
             fileName: newFileName!,
           }
         : {}),
-      ...fxFields,
       updatedBy: actor.id,
       updatedAt: new Date(),
     }).where(eq(receipt.id, existing.id));
@@ -222,15 +266,23 @@ export async function deleteReceipt(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   const { receiptId } = DeleteReceiptInput.parse(Object.fromEntries(formData));
 
-  const existing = await db.query.receipt.findFirst({ where: eq(receipt.id, receiptId) });
+  const existing = await db.query.receipt.findFirst({
+    where: eq(receipt.id, receiptId),
+    with: { claim: true },
+  });
   if (!existing) return { error: "Receipt not found." };
 
-  const canDelete =
-    actor.role === "admin" || actor.role === "finance" || existing.uploadedBy === actor.id;
-  if (!canDelete) return { error: "You don't have permission to delete this receipt." };
+  const isOwner = existing.uploadedBy === actor.id;
+  const isAdminFinance = actor.role === "admin" || actor.role === "finance";
+  if (!isAdminFinance && !isOwner) {
+    return { error: "You don't have permission to delete this receipt." };
+  }
+  if (actor.role === "employee" && existing.claim.claimantId !== actor.id) {
+    return { error: "You can only delete receipts on claims assigned to you." };
+  }
 
   try {
     await deleteDriveFile(existing.driveFileId);

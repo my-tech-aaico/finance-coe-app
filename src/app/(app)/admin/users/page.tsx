@@ -16,7 +16,7 @@ export default async function UsersPage({
 
   const conditions = [
     q ? or(ilike(user.name, `%${q}%`), ilike(user.email, `%${q}%`)) : undefined,
-    role ? eq(user.role, role as "admin" | "finance" | "employee") : undefined,
+    role ? eq(user.role, role as "admin" | "finance" | "credit_card_holder" | "employee") : undefined,
     status ? eq(user.status, status as "active" | "inactive") : undefined,
   ].filter(Boolean) as Parameters<typeof and>[0][];
 

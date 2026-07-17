@@ -86,6 +86,18 @@ export function ClassForm({ editClass }: Props) {
             />
           </div>
 
+          {state && "ok" in state && (
+            <div style={{
+              background: "#f0fdf4",
+              border: "1px solid #bbf7d0",
+              color: "#16a34a",
+              fontSize: 13,
+              borderRadius: 8,
+              padding: "10px 14px",
+            }}>
+              Class updated successfully.
+            </div>
+          )}
           {state && "error" in state && (
             <div style={{
               background: "#fef2f2",

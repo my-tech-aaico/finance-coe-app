@@ -1,4 +1,11 @@
-export default function DashboardPage() {
+import { redirect } from "next/navigation";
+import { requireUser } from "@/lib/session";
+
+export default async function DashboardPage() {
+  const user = await requireUser();
+  // v2: Employees have no dashboard — send them straight to Receipts (spec §4.3).
+  if (user.role === "employee") redirect("/claims/receipts");
+
   return (
     <div className="animate-in flex flex-col items-center justify-center py-24 text-center">
       <div className="w-20 h-20 rounded-2xl bg-brand-50 flex items-center justify-center mb-6">

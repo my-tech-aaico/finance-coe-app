@@ -5,11 +5,13 @@ import { useCallback, useState, useTransition } from "react";
 import { AddUserForm } from "./AddUserForm";
 import { ToggleStatusButton } from "./ToggleStatusButton";
 
+type Role = "admin" | "finance" | "credit_card_holder" | "employee";
+
 type User = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "finance" | "employee";
+  role: Role;
   status: "active" | "inactive";
   createdAt: Date;
   createdByName: string;
@@ -20,7 +22,15 @@ type FormMode = { mode: "add" } | { mode: "edit"; user: User };
 const ROLE_COLORS: Record<string, string> = {
   admin: "bg-purple-50 text-purple-700",
   finance: "bg-teal-50 text-teal-700",
+  credit_card_holder: "bg-brand-50 text-brand-700",
   employee: "bg-blue-50 text-blue-700",
+};
+
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Admin",
+  finance: "Finance",
+  credit_card_holder: "Credit Card Holder",
+  employee: "Employee",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -105,6 +115,7 @@ export function UserTable({ users, filters }: Props) {
           <option value="">All Roles</option>
           <option value="admin">Admin</option>
           <option value="finance">Finance</option>
+          <option value="credit_card_holder">Credit Card Holder</option>
           <option value="employee">Employee</option>
         </select>
         <select
@@ -164,8 +175,8 @@ export function UserTable({ users, filters }: Props) {
                     </td>
                     <td className={`px-5 py-4 ${u.status === "inactive" ? "text-surface-400" : "text-surface-600"}`}>{u.email}</td>
                     <td className="px-5 py-4">
-                      <span className={`badge justify-center ${ROLE_COLORS[u.role] ?? ""}`} style={{ textTransform: "capitalize" }}>
-                        {u.role}
+                      <span className={`badge justify-center ${ROLE_COLORS[u.role] ?? ""}`}>
+                        {ROLE_LABELS[u.role] ?? u.role}
                       </span>
                     </td>
                     <td className="px-5 py-4">

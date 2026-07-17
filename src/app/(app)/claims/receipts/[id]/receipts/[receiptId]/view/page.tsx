@@ -2,14 +2,15 @@ import { requireRole } from "@/lib/session";
 import { db } from "@/db";
 import { receipt } from "@/db/schema";
 import { eq } from "drizzle-orm";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
-import { resolveDetailViewMode } from "../../../_lib/access";
+import { canViewReceipt } from "../../../_lib/access";
 import { FileViewer } from "../../../_components/FileViewer";
 
-function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+function formatUploaded(d: Date): string {
+  return new Date(d).toLocaleString("en-GB", {
+    day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit",
+  });
 }
 
 export default async function ReceiptViewPage({
@@ -17,22 +18,24 @@ export default async function ReceiptViewPage({
 }: {
   params: Promise<{ id: string; receiptId: string }>;
 }) {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder", "employee"]);
   const { id: claimId, receiptId } = await params;
 
   const row = await db.query.receipt.findFirst({
     where: eq(receipt.id, receiptId),
     with: {
       claim: { with: { entity: true } },
+      department: true,
+      class_: true,
+      teamSplit: true,
       uploadedByUser: true,
     },
   });
   if (!row || row.claimId !== claimId) notFound();
   if (row.claim.deletedAt) notFound();
+  if (!canViewReceipt(actor, row, row.claim)) notFound();
 
-  const mode = await resolveDetailViewMode(actor, row.claim);
-  if (mode === "employee_other" && row.uploadedBy !== actor.id) redirect("/dashboard");
-
+  const isAdminFinance = actor.role === "admin" || actor.role === "finance";
   const fileStreamUrl = `/api/receipts/${receiptId}/file`;
 
   return (
@@ -54,23 +57,32 @@ export default async function ReceiptViewPage({
             <h2 className="text-lg font-bold text-surface-900 mb-3">{row.fileName}</h2>
             <dl className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
               <div>
-                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Date</dt>
-                <dd className="text-surface-800">{formatDate(row.receiptDate)}</dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Amount</dt>
-                <dd className="text-surface-800">
-                  {row.currencyCode} {Number(row.amountLocal).toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                  {" "}<span className="text-surface-400">≈ ${Number(row.amountUsd).toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>
-                </dd>
+                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Uploaded</dt>
+                <dd className="text-surface-800">{formatUploaded(row.uploadedAt)}</dd>
               </div>
               <div>
                 <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Uploaded By</dt>
                 <dd className="text-surface-800">{row.uploadedByUser?.name ?? "—"}</dd>
               </div>
+              <div>
+                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Department</dt>
+                <dd className="text-surface-800">{row.department?.code ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Class</dt>
+                <dd className="text-surface-800">{row.class_?.code ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Team Split</dt>
+                <dd className="text-surface-800">{row.teamSplit?.code ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-xs font-semibold text-surface-400 uppercase tracking-wide mb-0.5">Project Code</dt>
+                <dd className="text-surface-800">{row.projectCode ?? "—"}</dd>
+              </div>
             </dl>
           </div>
-          {(actor.role === "admin" || actor.role === "finance") && (
+          {isAdminFinance && (
             <a
               href={row.fileUrl}
               target="_blank"

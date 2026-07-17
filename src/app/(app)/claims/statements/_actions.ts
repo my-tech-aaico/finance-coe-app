@@ -61,7 +61,7 @@ export async function uploadStatement(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const parsed = UploadInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.errors[0].message };
 
@@ -89,12 +89,8 @@ export async function uploadStatement(
   if (claimRow.status !== "awaiting_statement") {
     return { error: "Claim is not awaiting a statement." };
   }
-  if (!claimRow.claimantId) {
-    return { error: "Claim has no claimant assigned." };
-  }
-  if (actor.role === "employee" && claimRow.claimantId !== actor.id) {
-    return { error: "You can only upload statements for claims assigned to you." };
-  }
+  // v2: a claimant is no longer required before linking a statement, and
+  // CCH/Finance/Admin may link to any awaiting-statement claim (spec §6.1).
 
   const sequenceNumber = await reserveNextStatementSequence();
   const displayId = formatStatementDisplayId(sequenceNumber);
@@ -186,7 +182,7 @@ export async function updateStatement(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const parsed = UpdateInput.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.errors[0].message };
 
@@ -196,12 +192,12 @@ export async function updateStatement(
   });
   if (!existing) return { error: "Statement not found." };
 
-  // Permission (per spec §5.1 — OR rule).
+  // v2: statement access is Admin/Finance or the uploader (CCH). The claimant
+  // (an Employee) has no statement access.
   const canEdit =
     actor.role === "admin" ||
     actor.role === "finance" ||
-    existing.uploadedBy === actor.id ||
-    existing.claim.claimantId === actor.id;
+    existing.uploadedBy === actor.id;
   if (!canEdit) {
     return { error: "You don't have permission to edit this statement." };
   }
@@ -229,12 +225,8 @@ export async function updateStatement(
     if (row.status !== "awaiting_statement") {
       return { error: "New claim is not awaiting a statement." };
     }
-    if (!row.claimantId) {
-      return { error: "New claim has no claimant assigned." };
-    }
-    if (actor.role === "employee" && row.claimantId !== actor.id) {
-      return { error: "You can only link to claims assigned to you." };
-    }
+    // v2: no claimant requirement; CCH/Finance/Admin may relink to any
+    // awaiting-statement claim.
     newClaimRow = row;
   }
 
@@ -445,22 +437,20 @@ function isVisibleToActor(
   actor: { id: string; role: string },
   stmt: {
     uploadedBy: string;
-    claim: { claimantId: string | null };
     deletedAt: Date | null;
   }
 ): boolean {
   if (stmt.deletedAt) return false;
   if (actor.role === "admin" || actor.role === "finance") return true;
-  return (
-    stmt.uploadedBy === actor.id || stmt.claim.claimantId === actor.id
-  );
+  // v2: CCH sees only statements they uploaded. Employees have no access.
+  return stmt.uploadedBy === actor.id;
 }
 
 export async function startVerification(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const { statementId } = StatementIdInput.parse(
     Object.fromEntries(formData)
   );
@@ -500,7 +490,7 @@ export async function retryVerification(
   _prev: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const { statementId } = StatementIdInput.parse(
     Object.fromEntries(formData)
   );

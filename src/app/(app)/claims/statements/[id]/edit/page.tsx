@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
 import { claim, statement, user } from "@/db/schema";
-import { and, eq, isNotNull, isNull, or, sql } from "drizzle-orm";
+import { and, eq, isNull, or, sql } from "drizzle-orm";
 import { isStatementMutable } from "../../_lib/mutability";
 import { EditStatementForm } from "./EditStatementForm";
 
@@ -11,7 +11,7 @@ export default async function EditStatementPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const actor = await requireRole(["admin", "finance", "employee"]);
+  const actor = await requireRole(["admin", "finance", "credit_card_holder"]);
   const { id } = await params;
 
   const existing = await db.query.statement.findFirst({
@@ -20,12 +20,9 @@ export default async function EditStatementPage({
   });
   if (!existing) notFound();
 
-  // Scoping check (§5.1 OR).
+  // v2 scoping: Admin/Finance or the uploader (CCH).
   const isAdminOrFinance = actor.role === "admin" || actor.role === "finance";
-  const canSee =
-    isAdminOrFinance ||
-    existing.uploadedBy === actor.id ||
-    existing.claim.claimantId === actor.id;
+  const canSee = isAdminOrFinance || existing.uploadedBy === actor.id;
   if (!canSee) notFound();
 
   // Mutability gate (§9.0 layer 1).
@@ -34,17 +31,12 @@ export default async function EditStatementPage({
   }
 
   // Load eligible claims for the dropdown:
-  //   - status = awaiting_statement
-  //   - claimantId IS NOT NULL
-  //   - deletedAt IS NULL
-  //   - for Employee: claimantId = actor.id
+  //   - status = awaiting_statement, deletedAt IS NULL (no claimant requirement in v2)
   //   - PLUS the current claim (so the user can see what's currently linked,
   //     even though it's now 'statement_attached' and wouldn't normally appear).
   const eligibleConditions = [
     eq(claim.status, "awaiting_statement"),
-    isNotNull(claim.claimantId),
     isNull(claim.deletedAt),
-    actor.role === "employee" ? eq(claim.claimantId, actor.id) : undefined,
   ].filter(Boolean) as Parameters<typeof and>[0][];
 
   const eligibleClaims = await db

@@ -1,37 +1,35 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { createReceipt, updateReceipt } from "../_actions";
 
 type Dept = { id: string; code: string; name: string; status: "active" | "inactive" };
 type Cls = { id: string; code: string; name: string; status: "active" | "inactive" };
+type TeamSplit = { id: string; code: string; name: string; classId: string };
+type ProjectCode = { id: string; code: string; name: string };
 type Receipt = {
   id: string;
-  receiptDate: string;
-  amountLocal: string;
-  currencyCode: string;
   departmentId: string;
   classId: string;
+  teamSplitId: string | null;
+  projectCodeId: string | null;
   fileName: string;
 };
 
-interface AddProps {
-  mode: "add";
+interface BaseProps {
   claimId: string;
   claimDisplayId: string;
-  entityCurrency: string;
   departments: Dept[];
   classes: Cls[];
+  teamSplits: TeamSplit[];
+  projectCodes: ProjectCode[];
 }
-
-interface EditProps {
+interface AddProps extends BaseProps {
+  mode: "add";
+}
+interface EditProps extends BaseProps {
   mode: "edit";
-  claimId: string;
-  claimDisplayId: string;
-  entityCurrency: string;
-  departments: Dept[];
-  classes: Cls[];
   receipt: Receipt;
 }
 
@@ -43,6 +41,19 @@ export function ReceiptForm(props: Props) {
   const receipt = isEdit ? (props as EditProps).receipt : undefined;
   const action = isEdit ? updateReceipt : createReceipt;
   const [state, formAction, pending] = useActionState(action, null as ActionState);
+
+  const [classId, setClassId] = useState<string>(receipt?.classId ?? "");
+  const [teamSplitId, setTeamSplitId] = useState<string>(receipt?.teamSplitId ?? "");
+
+  const splitsForClass = props.teamSplits.filter((t) => t.classId === classId);
+  const classChosen = classId !== "";
+  const classHasSplits = splitsForClass.length > 0;
+  const teamSplitRequired = classChosen && classHasSplits;
+
+  function onClassChange(next: string) {
+    setClassId(next);
+    setTeamSplitId(""); // reset on class change (spec §5.6.2)
+  }
 
   return (
     <div className="bg-white rounded-xl border border-surface-200 shadow-sm p-6">
@@ -70,6 +81,8 @@ export function ReceiptForm(props: Props) {
       <form action={formAction} autoComplete="off">
         {isEdit && <input type="hidden" name="receiptId" value={receipt!.id} />}
         {!isEdit && <input type="hidden" name="claimId" value={props.claimId} />}
+        {/* Keep the controlled team split value in the submitted form data */}
+        <input type="hidden" name="teamSplitId" value={teamSplitId} />
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           <div>
@@ -94,52 +107,6 @@ export function ReceiptForm(props: Props) {
 
           <div>
             <label className="input-label">
-              Receipt Date <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <input
-              name="receiptDate"
-              type="date"
-              required
-              className="input-field"
-              defaultValue={receipt?.receiptDate ?? new Date().toISOString().split("T")[0]}
-            />
-          </div>
-
-          <div>
-            <label className="input-label">
-              Amount <span style={{ color: "#ef4444" }}>*</span>
-            </label>
-            <div style={{ position: "relative" }}>
-              <span style={{
-                position: "absolute",
-                left: 12,
-                top: "50%",
-                transform: "translateY(-50%)",
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#6b7280",
-                fontFamily: "monospace",
-                pointerEvents: "none",
-              }}>
-                {props.entityCurrency}
-              </span>
-              <input
-                name="amountLocal"
-                type="number"
-                step="0.01"
-                min="0.01"
-                required
-                className="input-field"
-                style={{ paddingLeft: 52 }}
-                defaultValue={receipt?.amountLocal ?? ""}
-                placeholder="0.00"
-              />
-            </div>
-            <p className="text-xs text-surface-400 mt-1">Amount in {props.entityCurrency} (the entity&apos;s currency). USD equivalent is calculated automatically.</p>
-          </div>
-
-          <div>
-            <label className="input-label">
               Department <span style={{ color: "#ef4444" }}>*</span>
             </label>
             <select name="departmentId" required className="input-field" defaultValue={receipt?.departmentId ?? ""}>
@@ -156,12 +123,61 @@ export function ReceiptForm(props: Props) {
             <label className="input-label">
               Class <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            <select name="classId" required className="input-field" defaultValue={receipt?.classId ?? ""}>
+            <select
+              name="classId"
+              required
+              className="input-field"
+              value={classId}
+              onChange={(e) => onClassChange(e.target.value)}
+            >
               <option value="" disabled>Select class…</option>
               {props.classes.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.code}{c.status === "inactive" ? " (inactive)" : ""}
                 </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="input-label">
+              Team Split {teamSplitRequired && <span style={{ color: "#ef4444" }}>*</span>}
+            </label>
+            <select
+              className="input-field"
+              value={teamSplitId}
+              disabled={!classChosen || !classHasSplits}
+              required={teamSplitRequired}
+              onChange={(e) => setTeamSplitId(e.target.value)}
+            >
+              <option value="">
+                {!classChosen
+                  ? "Select a class first…"
+                  : !classHasSplits
+                    ? "No team splits for this class"
+                    : "Select team split…"}
+              </option>
+              {splitsForClass.map((t) => (
+                <option key={t.id} value={t.id}>{t.code}</option>
+              ))}
+            </select>
+            <p className="text-xs text-surface-400 mt-1">
+              {!classChosen
+                ? "Depends on the selected class."
+                : !classHasSplits
+                  ? "This class has no team splits — optional."
+                  : "Required for this class."}
+            </p>
+          </div>
+
+          <div>
+            <label className="input-label">
+              Project Code <span style={{ color: "#ef4444" }}>*</span>
+            </label>
+            <select name="projectCodeId" required className="input-field" defaultValue={receipt?.projectCodeId ?? ""}>
+              <option value="" disabled>Select project code…</option>
+              {props.projectCodes.map((p) => (
+                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
               ))}
             </select>
           </div>

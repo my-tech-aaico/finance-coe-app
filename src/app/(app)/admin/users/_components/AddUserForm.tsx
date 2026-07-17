@@ -3,11 +3,13 @@
 import { useActionState, useEffect, useRef } from "react";
 import { createUser, updateUser } from "../_actions";
 
+import type { Role } from "@/lib/permissions";
+
 type UserForEdit = {
   id: string;
   name: string;
   email: string;
-  role: "admin" | "finance" | "employee";
+  role: Role;
 };
 
 interface Props {
@@ -97,6 +99,7 @@ export function AddUserForm({ onBack, editUser }: Props) {
                 {!isEdit && <option value="" disabled>Select role…</option>}
                 <option value="admin">Admin</option>
                 <option value="finance">Finance</option>
+                <option value="credit_card_holder">Credit Card Holder</option>
                 <option value="employee">Employee</option>
               </select>
             </div>

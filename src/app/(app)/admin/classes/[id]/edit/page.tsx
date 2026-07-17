@@ -1,10 +1,11 @@
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
-import { class_ as klass } from "@/db/schema";
+import { class_ as klass, teamSplit } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ClassForm } from "../../_components/ClassForm";
+import { TeamSplitsPanel } from "../../_components/TeamSplitsPanel";
 
 export default async function EditClassPage({
   params,
@@ -16,6 +17,11 @@ export default async function EditClassPage({
 
   const cls = await db.query.class_.findFirst({ where: eq(klass.id, id) });
   if (!cls) notFound();
+
+  const splits = await db.query.teamSplit.findMany({
+    where: eq(teamSplit.classId, id),
+    orderBy: (t, { asc }) => [asc(t.code)],
+  });
 
   return (
     <div className="animate-in">
@@ -29,7 +35,19 @@ export default async function EditClassPage({
         </svg>
         Back to Classes
       </Link>
+
       <ClassForm editClass={cls} />
+
+      <TeamSplitsPanel
+        classId={cls.id}
+        classStatus={cls.status}
+        teamSplits={splits.map((s) => ({
+          id: s.id,
+          code: s.code,
+          name: s.name,
+          status: s.status,
+        }))}
+      />
     </div>
   );
 }

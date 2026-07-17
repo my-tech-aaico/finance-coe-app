@@ -15,7 +15,7 @@ const ALLOWED = new Set(
     .filter(Boolean)
 );
 
-const ROLE = z.enum(["admin", "finance", "employee"]);
+const ROLE = z.enum(["admin", "finance", "credit_card_holder", "employee"]);
 
 const CreateInput = z.object({
   name: z.string().trim().min(1, "Name is required").max(120),

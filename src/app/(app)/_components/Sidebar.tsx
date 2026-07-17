@@ -1,11 +1,9 @@
 "use client";
 
-import { canAccess } from "@/lib/permissions";
+import { canAccess, type Role } from "@/lib/permissions";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-
-type Role = "admin" | "finance" | "employee";
 
 interface SidebarProps {
   role: Role;
@@ -155,7 +153,7 @@ export function Sidebar({ role }: SidebarProps) {
         )}
 
         {/* Admin Group */}
-        {(canAccess(role, "/admin/users") || canAccess(role, "/admin/entities") || canAccess(role, "/admin/departments") || canAccess(role, "/admin/classes")) && (
+        {(canAccess(role, "/admin/users") || canAccess(role, "/admin/entities") || canAccess(role, "/admin/project-code") || canAccess(role, "/admin/departments") || canAccess(role, "/admin/classes")) && (
           <div className="pt-3">
             <button
               onClick={() => setAdminOpen(!adminOpen)}
@@ -229,6 +227,19 @@ export function Sidebar({ role }: SidebarProps) {
                       />
                     </svg>
                     <span>Entities</span>
+                  </Link>
+                )}
+                {canAccess(role, "/admin/project-code") && (
+                  <Link
+                    href="/admin/project-code"
+                    className={`nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm pl-6 ${isActive("/admin/project-code") ? "active" : "text-surface-600"}`}
+                  >
+                    <svg width="18" height="18" fill="none" viewBox="0 0 24 24">
+                      <path d="M20 7h-9M14 17H5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                      <circle cx="17" cy="17" r="3" stroke="currentColor" strokeWidth="1.8" />
+                      <circle cx="7" cy="7" r="3" stroke="currentColor" strokeWidth="1.8" />
+                    </svg>
+                    <span>Project Code</span>
                   </Link>
                 )}
                 {canAccess(role, "/admin/departments") && (
