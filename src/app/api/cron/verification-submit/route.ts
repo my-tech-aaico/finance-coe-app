@@ -11,7 +11,13 @@ export async function POST(req: NextRequest) {
 
   try {
     const result = await runVerificationSubmit();
-    return NextResponse.json({ ok: true, ...result });
+    return NextResponse.json({
+      ok: true,
+      submitted: result.ok,
+      failed: result.failed,
+      batchSize: result.batchSize,
+      ms: result.ms,
+    });
   } catch (err) {
     console.error("[verification-submit] (HTTP) Fatal:", err);
     return NextResponse.json({ ok: false, error: String(err) }, { status: 500 });
