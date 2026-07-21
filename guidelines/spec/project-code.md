@@ -401,3 +401,126 @@ Once the code is built and the test checklist passes:
 
 1. **Update the older docs.** In `COE_Finance_Claims_Portal_UI_Spec.md` (v1) mark it superseded and point to the v2 spec. In `COE_Finance_Claims_Portal_UI_Spec_v2.md`, correct the "FX machinery **retained** in the data model" wording (§5.6.2, §5.6.4, §14, §8) to say the **receipt-level amount/FX columns were dropped** (only `entity.currency` and the standalone `fx_rate` table remain) — per the decision in this guide.
 2. Delete completed TODOs from this guide.
+
+---
+
+## 15. Project Code enhancement (post-v2) — status, activation & Google-Sheet sync
+
+> **Source spec:** [`guidelines/spec/new-impl-projectcode.md`](./new-impl-projectcode.md).
+> **What this adds on top of §5:** Project Code stops being a static read-only list. It gains an **active/inactive status**, an **admin Activate/Deactivate** control, an **active-only + searchable** receipt dropdown, and a **public sync API** that reconciles the list from a Google Sheet.
+>
+> **This section supersedes two earlier statements in this guide:**
+> - §3.2 "**No status column** … the sync job that fills it is out of scope" — the `project_code` table now **has** a `status` column, and the sync job is **in scope** (§15.5 below).
+> - §5 "list-only … **No Add/Edit/Delete, no `_actions.ts`**" — the admin page now has a `_actions.ts` with a **Deactivate/Activate** toggle (still **no** manual Add/Edit/Delete — the sheet sync owns the list).
+
+> **Progress (2026-07-20):**
+> - **Step 1 — DB `status` + admin toggle (§15.1, §15.2): ✅ done.** Migration `0011` applied; admin page shows Status + Activate/Deactivate.
+> - **Step 2 — receipt dropdown active-only + search + inactive injection (§15.3): ✅ done.** Searchable combobox live; server validation is status-aware.
+> - **Step 3 — Google-Sheet sync API (§15.4, §15.5): ✅ code done, ⚠️ not yet runnable.** `sheets.ts` + `runProjectCodeSync` + `/api/cron/project-code-sync` + CLI built and building clean. **Blocked on ops (§15.4):** (1) **enable the Google Sheets API** in Cloud project `662685061523`, (2) share the sheet with the service account, (3) set `PROJECT_CODE_SHEET_ID` / `PROJECT_CODE_SHEET_TAB` / header env vars in the real `.env`.
+
+### 15.0 Decisions locked (from review, 2026-07-20)
+
+1. **Status storage:** a new `project_code_status` pgEnum (`active` | `inactive`), column `status` `DEFAULT 'active' NOT NULL` — **mirrors `team_split_status`** (§3.3), not a boolean, for house-style consistency.
+2. **`created_at` already exists** on `project_code` — the enhancement spec's "created_at" ask is **already satisfied**; no column work for it.
+3. **New rows from the sync take `created_at` = the sheet's parsed timestamp** (fallback to `now()` when the cell is blank/unparseable). Existing rows' `created_at` is **never** touched.
+4. **Column mapping is by header name** (row 1), header labels **configurable via env**; a missing required header **fails the run loudly** (no silent column drift).
+5. **Admin page: status + toggle only.** Status column + per-row Activate/Deactivate (with a client confirm). **No** manual Add/Edit/Delete.
+6. **The sync never deactivates or deletes.** It only **inserts** new codes (as `active`) and **renames** existing codes whose name changed. A code that exists in the table but is **absent from the sheet is left untouched** (spec: "project code will not be removed … active/inactive status will remain"). Deactivation is **manual (admin) only**.
+7. **Receipt dropdown = active-only**, but an **edit** of a receipt whose linked code is now inactive **injects that code labelled "(inactive)"** and the server accepts it — mirroring the Team Split rule (§6.5).
+
+### 15.1 Database — `status` column + migration `0011`
+
+`drizzle/0010_team_split_status.sql` is the latest migration. Add a **new** follow-up (do **not** edit `0009`, which already created & seeded `project_code` without a status — same rule as team_split §3.1):
+
+`drizzle/0011_project_code_status.sql`
+```sql
+CREATE TYPE "public"."project_code_status" AS ENUM('active','inactive');--> statement-breakpoint
+ALTER TABLE "project_code" ADD COLUMN "status" "project_code_status" DEFAULT 'active' NOT NULL;
+```
+Existing seeded rows become `active` via the default. Creating the type **and** using it in the same migration is fine — the enum-in-transaction caveat (§2.2) applies only to `ALTER TYPE … ADD VALUE` on an existing enum, not to a brand-new `CREATE TYPE` (this is exactly what `0010` did for team_split).
+
+**Edit `src/db/schema/projectCode.ts`:**
+- Add `export const projectCodeStatus = pgEnum("project_code_status", ["active","inactive"]);`
+- Add column `status: projectCodeStatus("status").notNull().default("active"),`
+- Update the header comment: the list is no longer "maintained by an out-of-scope sync" — the sync now exists (§15.5) and the portal can toggle status.
+
+> **Migration is hand-written, not generated.** `drizzle/meta/` is **gitignored** in this repo, so `pnpm db:generate` has no baseline snapshot to diff against and instead dumps the *entire* schema as a fresh `0000_*` migration. Do **not** commit that. Instead **hand-write** `drizzle/0011_project_code_status.sql` with exactly the two statements above (this is how `0009`/`0010` were actually authored too), then `pnpm db:migrate`. If you do run `db:generate` to sanity-check the SQL, delete the generated dump afterward and, if needed, fix the local `drizzle/meta/_journal.json` tag back to `0011_project_code_status`.
+
+### 15.2 Admin page — Status column + Activate/Deactivate
+
+- `src/app/(app)/admin/project-code/page.tsx` — also select `status`; keep the `?q` `ilike` search and `order by code`. Pass `status` into the table rows.
+- `src/app/(app)/admin/project-code/_components/ProjectCodeTable.tsx` — add a **Status** column (Active/Inactive badge) and an **Actions** column with a per-row **Deactivate/Activate** button → client-side `confirm(...)` → calls the new action. Update the info banner ("This list is synced from the master Google Sheet; you can activate/deactivate codes here").
+- **New `src/app/(app)/admin/project-code/_actions.ts`** — `toggleProjectCodeStatus(projectCodeId)`, `requireRole(["admin","finance"])`, flip `status`, set `updatedAt`, `revalidatePath("/admin/project-code")`. **Mirror `toggleTeamSplitStatus`** in `admin/classes/[id]/_actions.ts`. No Add/Edit/Delete actions.
+
+### 15.3 Receipt dropdown — active-only + search + inactive injection
+
+Files: `src/app/(app)/claims/receipts/[id]/page.tsx`, `_components/ReceiptForm.tsx`, `_actions.ts`.
+
+- **Active-only query:** `[id]/page.tsx` today loads **all** project codes (`db.query.projectCode.findMany`). Filter to `where eq(projectCode.status, "active")` for the dropdown.
+- **Inactive injection on edit** (mirror Team Split §6.5): when the `edit-receipt` action loads a receipt whose linked `projectCode.status = 'inactive'`, **inject that one code** into the options, labelled `… (inactive)`. Server counterpart in `_actions.ts`: in `createReceipt`/`updateReceipt`, if the submitted `projectCodeId === existing.projectCodeId`, **accept it regardless of status**; otherwise require the code to **exist and be active**. (Today it only checks existence — make the check status-aware for *new* selections.)
+- **Search (spec requirement):** with **1000+** codes a native `<select>` is unusable. Replace the Project Code `<select>` in `ReceiptForm.tsx` with a **searchable combobox** client component that filters by **code OR name**. Keep the submitted field name **`projectCodeId`** (write it to a hidden input) so the server-action contract and the `projectCode` snapshot write are **unchanged**.
+- The `projectCode` **snapshot** column (§3.4) already keeps history stable when the sync renames a code — no change needed there; still write both `projectCodeId` and `projectCode` on create/update.
+
+### 15.4 Environment (`.env.example`)
+
+Reuse the existing **`CRON_SECRET`** (already present). Add:
+```
+# Project Code sync (reads a master Google Sheet; POST /api/cron/project-code-sync, x-cron-secret)
+PROJECT_CODE_SHEET_ID=1XTmPcuGPPiiBbC_71lx7BGnY5xWrYJ-O5gL57Aqtnf8
+PROJECT_CODE_SHEET_TAB=<tab/sheet name>          # A1 ranges need the tab NAME, not a gid
+PROJECT_CODE_HEADER_CODE=<header text for the code column>
+PROJECT_CODE_HEADER_TIMESTAMP=<header text for the timestamp column>
+PROJECT_CODE_HEADER_NAME=<header text for the project-name column>
+```
+> **Ops prerequisites (both required before the sync can run):**
+> 1. **Enable the Google Sheets API** in the service account's Cloud project (`662685061523`) — visit `https://console.developers.google.com/apis/api/sheets.googleapis.com/overview?project=662685061523`. Only the Drive API is enabled today; a sync run currently fails with *"Google Sheets API has not been used in project 662685061523 before or it is disabled"* (verified 2026-07-20).
+> 2. **Share the sheet (read) with `GOOGLE_SERVICE_ACCOUNT_EMAIL`** — the service account can't read a sheet it isn't granted on.
+>
+> The Sheets API addresses ranges by **tab name**, not a gid; store the tab name in `PROJECT_CODE_SHEET_TAB` (or resolve it once via `spreadsheets.get`).
+
+### 15.5 Sync API (public, `x-cron-secret`) — mirrors `verification-submit`
+
+- **New route `src/app/api/cron/project-code-sync/route.ts`** — `POST`, `export const dynamic = "force-dynamic"`, guarded by `isAuthorizedCronRequest(req)` (401 otherwise), delegates to the lib below, returns `{ ok, inserted, renamed, unchanged, ms }`. Copy the shape of `api/cron/verification-submit/route.ts`.
+- **New Sheets client `src/lib/sheets.ts`** — `src/lib/drive.ts` is intentionally **Drive-scope only**; keep it that way. Add a small module using `google.sheets({ version: "v4", auth })` with scope **`https://www.googleapis.com/auth/spreadsheets.readonly`** and the same `google.auth.JWT` service-account credentials pattern as `drive.ts`. Expose e.g. `readSheetRows(sheetId, tab): Promise<string[][]>`.
+- **New lib `src/lib/projectCodeSync.ts`** — `runProjectCodeSync()` (no `process.exit`; callable from the route **and** an optional CLI, exactly like `verificationJobs.ts`). Algorithm:
+  1. **Read the sheet** → rows. Take row 1 as headers; resolve the code/timestamp/name **column indexes by header name** (env, §15.4); **throw if any required header is missing.** Build a temp array of `{ code, timestamp, name }`: `trim()`, **uppercase the code**, skip rows with a blank code, and **dedupe by code** (first occurrence wins; log later duplicates).
+  2. **Load all `project_code`** (`id, code, name`) into a `Map` keyed by code.
+  3. **Diff:**
+     - code **in sheet, not in table** → **INSERT** `{ code, name, status:'active', createdAt: parseTimestamp(row.timestamp) ?? now() }`.
+     - code **in both, name differs** → **UPDATE** `name` (+ `updatedAt = now()`). **Do not touch `status` or `createdAt`.**
+     - code **in table, not in sheet** → **leave untouched** (never deactivate/delete — decision §15.0.6).
+  4. Apply as a batch insert + per-changed-row name updates (1000+ rows is small; a single transaction is fine). Return the counts.
+- **Optional CLI** `src/scripts/project-code-sync.ts` + npm script `"project-code-sync": "tsx src/scripts/project-code-sync.ts"` (mirrors `fx-scheduler.ts`) so it can also run from Windows Task Scheduler / Linux cron. Cadence is the external caller's choice (daily is ample — the list changes rarely).
+
+### 15.6 Seeds
+
+`scripts/seed-v2.ts` already inserts project codes without a status → **fine** (defaults to `active`). Optionally seed **one `inactive`** code to exercise the toggle and the "inactive hidden from the receipt dropdown / injected on edit" paths.
+
+### 15.7 Files touched
+
+| File | Action | Purpose |
+|------|--------|---------|
+| `src/db/schema/projectCode.ts` | Edit | `project_code_status` enum + `status` column. |
+| `drizzle/0011_project_code_status.sql` | Generate | `CREATE TYPE` + `ADD COLUMN status`. |
+| `src/app/(app)/admin/project-code/page.tsx` | Edit | Select + pass `status`. |
+| `src/app/(app)/admin/project-code/_components/ProjectCodeTable.tsx` | Edit | Status column + Activate/Deactivate button + banner. |
+| `src/app/(app)/admin/project-code/_actions.ts` | **New** | `toggleProjectCodeStatus` (mirror `toggleTeamSplitStatus`). |
+| `src/app/(app)/claims/receipts/[id]/page.tsx` | Edit | Active-only dropdown query + inactive injection on edit. |
+| `src/app/(app)/claims/receipts/[id]/_components/ReceiptForm.tsx` | Edit | Searchable combobox (code/name), hidden `projectCodeId`. |
+| `src/app/(app)/claims/receipts/[id]/_actions.ts` | Edit | Status-aware project-code validation (accept existing inactive on edit). |
+| `src/lib/sheets.ts` | **New** | Read-only Sheets v4 client (service-account JWT). |
+| `src/lib/projectCodeSync.ts` | **New** | `runProjectCodeSync()` diff/insert/rename engine. |
+| `src/app/api/cron/project-code-sync/route.ts` | **New** | Public POST, `x-cron-secret`, → `runProjectCodeSync`. |
+| `src/scripts/project-code-sync.ts` + `package.json` | **New** (optional) | CLI trigger, mirrors `fx-scheduler`. |
+| `.env.example` | Edit | Sheet id/tab + header-name keys (§15.4). |
+| `scripts/seed-v2.ts` | Edit (optional) | One inactive code for coverage. |
+
+### 15.8 Test checklist
+
+- [ ] Migration `0011` applies; pre-existing seeded codes are `active`.
+- [ ] Admin page shows a **Status** column and a working **Activate/Deactivate** toggle (confirm popup); no Add/Edit/Delete.
+- [ ] Receipt **add** dropdown lists **only active** codes; typing filters by **code or name**; Project Code still **required**.
+- [ ] Receipt **edit** of a receipt whose code went inactive: the code shows `… (inactive)`, and saving **succeeds** (not dropped/errored); picking a *different* inactive code is rejected.
+- [ ] Sync API: **401** without `x-cron-secret`; with it, **inserts** new sheet codes as `active` with `created_at` = the sheet timestamp; **renames** codes whose name changed; **leaves** `status`/`created_at` of existing codes; a code missing from the sheet is **not** deactivated; duplicate sheet rows are de-duped; a missing required header **fails loudly**.
+- [ ] Deactivating a code in admin removes it from the receipt **add** dropdown on the next load.
+- [ ] `pnpm build` + `pnpm lint` clean; migration applies on a copy of prod data.

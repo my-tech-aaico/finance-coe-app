@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { createReceipt, updateReceipt } from "../_actions";
 
@@ -35,6 +35,104 @@ interface EditProps extends BaseProps {
 
 type Props = AddProps | EditProps;
 type ActionState = { error: string } | { ok: true } | null;
+
+// Searchable, type-to-filter dropdown for Project Code (the list can be large — 1000+ codes).
+// Keeps a hidden `projectCodeId` input so the server-action contract is unchanged.
+function ProjectCodeCombobox({
+  projectCodes,
+  defaultValue,
+}: {
+  projectCodes: ProjectCode[];
+  defaultValue: string;
+}) {
+  const initial = projectCodes.find((p) => p.id === defaultValue);
+  const labelOf = (p: ProjectCode) => `${p.code} — ${p.name}`;
+
+  const [selectedId, setSelectedId] = useState<string>(initial ? defaultValue : "");
+  const [query, setQuery] = useState<string>(initial ? labelOf(initial) : "");
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const selected = projectCodes.find((p) => p.id === selectedId);
+  // When the input still shows the selected label, treat the filter as empty so
+  // reopening shows the full list rather than an empty "no match".
+  const showingSelection = selected != null && query === labelOf(selected);
+  const q = showingSelection ? "" : query.trim().toLowerCase();
+  const matches =
+    q === ""
+      ? projectCodes
+      : projectCodes.filter(
+          (p) => p.code.toLowerCase().includes(q) || p.name.toLowerCase().includes(q)
+        );
+
+  function select(p: ProjectCode) {
+    setSelectedId(p.id);
+    setQuery(labelOf(p));
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative" ref={containerRef}>
+      <input type="hidden" name="projectCodeId" value={selectedId} />
+      <input
+        type="text"
+        className="input-field"
+        placeholder="Search project code or name…"
+        autoComplete="off"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setSelectedId(""); // typing invalidates the selection until a new one is chosen
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+      />
+      {open && (
+        <div
+          className="absolute z-20 mt-1 w-full bg-white border border-surface-200 rounded-lg shadow-lg"
+          style={{ maxHeight: 224, overflowY: "auto" }}
+        >
+          {matches.length === 0 ? (
+            <div className="px-3 py-2.5 text-sm text-surface-400">No matching project code</div>
+          ) : (
+            matches.map((p) => (
+              <button
+                type="button"
+                key={p.id}
+                onClick={() => select(p)}
+                className="w-full text-left px-3 py-2.5 text-sm hover:bg-surface-50 flex items-center gap-2"
+              >
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    background: "#f0f4ff",
+                    color: "#4263eb",
+                    padding: "2px 8px",
+                    borderRadius: 6,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {p.code}
+                </span>
+                <span className="text-surface-700">{p.name}</span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function ReceiptForm(props: Props) {
   const isEdit = props.mode === "edit";
@@ -174,12 +272,11 @@ export function ReceiptForm(props: Props) {
             <label className="input-label">
               Project Code <span style={{ color: "#ef4444" }}>*</span>
             </label>
-            <select name="projectCodeId" required className="input-field" defaultValue={receipt?.projectCodeId ?? ""}>
-              <option value="" disabled>Select project code…</option>
-              {props.projectCodes.map((p) => (
-                <option key={p.id} value={p.id}>{p.code} — {p.name}</option>
-              ))}
-            </select>
+            <ProjectCodeCombobox
+              projectCodes={props.projectCodes}
+              defaultValue={receipt?.projectCodeId ?? ""}
+            />
+            <p className="text-xs text-surface-400 mt-1">Type to search by code or name. Only active codes.</p>
           </div>
         </div>
 

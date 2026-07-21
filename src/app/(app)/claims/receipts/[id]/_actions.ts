@@ -111,7 +111,7 @@ export async function createReceipt(
   if ("error" in ts) return { error: ts.error };
 
   const pc = await db.query.projectCode.findFirst({ where: eq(projectCode.id, parsed.data.projectCodeId) });
-  if (!pc) return { error: "Selected project code is invalid." };
+  if (!pc || pc.status !== "active") return { error: "Selected project code is invalid." };
 
   const receiptId = crypto.randomUUID();
   const driveFilename = `${receiptId}_${sanitizeFilename(file.name)}`;
@@ -198,7 +198,10 @@ export async function updateReceipt(
   if ("error" in ts) return { error: ts.error };
 
   const pc = await db.query.projectCode.findFirst({ where: eq(projectCode.id, parsed.data.projectCodeId) });
-  if (!pc) return { error: "Selected project code is invalid." };
+  if (!pc) return { error: "Project code not found." };
+  if (pc.status !== "active" && pc.id !== existing.projectCodeId) {
+    return { error: "Selected project code is inactive." };
+  }
 
   const file = formData.get("file");
   const hasNewFile = file instanceof File && file.size > 0;

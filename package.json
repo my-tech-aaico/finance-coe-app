@@ -13,7 +13,8 @@
     "db:seed:v2": "tsx scripts/seed-v2.ts",
     "fx-scheduler": "tsx src/scripts/fx-scheduler.ts",
     "verification-submit": "tsx src/scripts/verification-submit.ts",
-    "verification-poll": "tsx src/scripts/verification-poll.ts"
+    "verification-poll": "tsx src/scripts/verification-poll.ts",
+    "project-code-sync": "tsx src/scripts/project-code-sync.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.0",

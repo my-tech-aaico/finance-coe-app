@@ -26,7 +26,7 @@ export default async function ProjectCodePage({
   return (
     <div className="animate-in">
       <ProjectCodeTable
-        projectCodes={rows.map((r) => ({ id: r.id, code: r.code, name: r.name }))}
+        projectCodes={rows.map((r) => ({ id: r.id, code: r.code, name: r.name, status: r.status }))}
         filters={{ q }}
       />
     </div>

@@ -4,7 +4,7 @@
 >
 > **What changed from v1** (summary — details in each section):
 > 1. **New role: Credit Card Holder (CCH)** and a reworked, narrower access model for Employee.
-> 2. **New Admin menu: Project Code** — a read-only, job-synced list (Code + Name). Added as a dropdown on the receipt form.
+> 2. **New Admin menu: Project Code** — a Google-Sheet-synced list (Code + Name) with an **Active/Inactive status** toggled in the portal (no manual Add/Edit/Delete). Added as an **active-only, searchable** dropdown on the receipt form.
 > 3. **Team Split** — a Team Split sits under a Class (one Class → many Team Splits; some Classes have none). It is **not** a top-level menu; Team Splits are managed **inside the Class edit page** (`/admin/classes/<classId>/edit`). Added as a class-dependent dropdown on the receipt form.
 > 4. **Receipt no longer captures an amount.** Amount, currency, and FX are removed from the portal UI. Receipt fields are now File, Department, Class, Team Split, Project Code. **Receipt Date is removed** (table sorts on `uploaded_at`).
 > 5. The Receipts summary card shows **count only**; the Amount column and the two money tiles are removed.
@@ -320,7 +320,7 @@ Reached at `/claims/receipt/<claimId>?action=add-receipt` and `/claims/receipts/
 | Department   | Dropdown (strict)             | From the Departments admin page. Only Active departments shown. |
 | Class        | Dropdown (strict)             | From the Classes admin page. Only Active classes shown. |
 | Team Split   | Dropdown (strict, class-dependent) | From the Team Splits configured under the selected Class (managed in the Class edit page). Only **Active** Team Splits shown. **Greyed out / disabled until a Class is selected.** See rules below. *(new)* |
-| Project Code | Dropdown (strict)             | From the Project Code admin list. *(new)* |
+| Project Code | Dropdown (strict, **searchable**) | From the Project Code admin list. **Only Active codes are selectable**; supports **type-to-search by code or name** (the list can be large). Editing a receipt whose code was later deactivated shows it as "(inactive)" and keeps it on save. *(new)* |
 
 > **Removed from v1:** the **Amount** field and the **Receipt Date** field are no longer collected.
 
@@ -553,31 +553,37 @@ An inline form (full-page view, no modal dialog):
 
 ## 9. Admin > Project Code *(new)*
 
-The Project Code page exposes the list of project codes used on receipts. The list is **maintained by a scheduled job** and is **read-only in the portal** (no Add / Edit / Delete). It is referenced by the Receipt add/edit form.
+The Project Code page exposes the list of project codes used on receipts. The list is **synced from a master Google Sheet** (a scheduled/triggered sync job), so **Add / Edit / Delete are not available in the portal**. What the portal **does** control is each code's **Active/Inactive status** via an Activate/Deactivate toggle. It is referenced by the Receipt add/edit form.
 
-> **Visibility:** Admin and Finance. **Scope note:** The sync job that populates this list is **out of scope** for this requirement.
+> **Visibility:** Admin and Finance. **Sync note:** codes and names come from the Google Sheet; the sync only ever **inserts new codes (as Active)** and **updates names** — it never deactivates or deletes. **Deactivation is a manual portal action.**
 
 ### 9.1 Project Code List Table
 
 | Column       | Description                                            |
 |--------------|--------------------------------------------------------|
-| Project Code | Short identifier shown as a chip.                      |
+| Project Code | Short identifier shown as a chip (uppercase, e.g. `PRJ-100`). |
 | Project Name | Full project name.                                     |
+| Status       | Active or Inactive — the code's own status, toggled per row (see 9.2). Only **Active** codes appear in the receipt form dropdown. *(new)* |
 
-> Only **Code** and **Name** are shown for now — no Status, Date Added, or Created By columns, and no row actions.
+> Add / Edit / Delete remain unavailable — the Google Sheet is the source of truth for the code list. Only **status** is managed here.
 
 ### 9.2 Actions
 
-- **None.** The page is view-only; the list is updated by the scheduled job.
+| Action                | Description                                              |
+|-----------------------|----------------------------------------------------------|
+| Deactivate / Activate | Toggles the project code's own status. **A confirmation popup is shown first** — e.g. *"Are you sure you want to deactivate/activate this project code?"* — and the toggle only applies on confirm. There is no hard delete/Remove (consistent with the "no hard deletes" principle, Section 14). Inactive codes do not appear in the receipt form dropdown. |
+
+> No Add / Edit / Delete — those are owned by the Google-Sheet sync.
 
 ### 9.3 Table Features
 
 - Search bar (searches across project code, project name).
-- No add/edit/delete controls.
+- Filter dropdown for status (Active / Inactive).
+- No add/edit/delete controls (status toggle only).
 
 ### 9.4 Use on the Receipt Form
 
-- Project Code appears as a **mandatory dropdown** on the Add/Edit Receipt form (Section 5.6.2). All project codes in the list are selectable.
+- Project Code appears as a **mandatory, searchable dropdown** on the Add/Edit Receipt form (Section 5.6.2). **Only Active project codes are selectable**; the field supports **type-to-search by code or name** (the list can be large — 1000+ codes). When editing a receipt whose linked code was later deactivated, that code is still shown (labelled "(inactive)") and preserved on save, but it cannot be newly selected.
 
 ---
 
@@ -717,7 +723,7 @@ New Team Splits are created **Active**.
 - When a table has no data (e.g. no claims, no statements, no users, no team splits), display a **friendly empty state** with:
   - A relevant icon/illustration.
   - A contextual message (e.g. "No claims yet").
-  - A call-to-action button where applicable (e.g. "Create your first claim"). Read-only lists (e.g. Project Code) show the message without a create CTA. **The empty-state CTA respects role permissions** — e.g. the claims "Create your first claim" button is shown only to Admin/Finance (hidden for CCH/Employee), matching Section 5.2.
+  - A call-to-action button where applicable (e.g. "Create your first claim"). Sync-managed lists with no manual create (e.g. Project Code) show the message without a create CTA. **The empty-state CTA respects role permissions** — e.g. the claims "Create your first claim" button is shown only to Admin/Finance (hidden for CCH/Employee), matching Section 5.2.
 - Do not show a blank or broken-looking table.
 
 ---
