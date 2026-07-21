@@ -32,7 +32,9 @@
       "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/claims/statements)",
       "Bash(curl -sS -o /tmp/stmt-list.html -w \"HTTP %{http_code}\\\\n\" http://localhost:3000/claims/statements)",
       "Read(//tmp/**)",
-      "Bash(pkill -f \"next dev\")"
+      "Bash(pkill -f \"next dev\")",
+      "Bash(git checkout *)",
+      "Bash(git add *)"
     ]
   }
 }

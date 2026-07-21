@@ -1,13 +1,51 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useTransition } from "react";
+import { useCallback, useState, useTransition } from "react";
+import { toggleProjectCodeStatus } from "../_actions";
 
-type ProjectCode = { id: string; code: string; name: string };
+type ProjectCode = { id: string; code: string; name: string; status: "active" | "inactive" };
 
 interface Props {
   projectCodes: ProjectCode[];
   filters: { q?: string };
+}
+
+const STATUS_COLORS: Record<string, string> = {
+  active: "bg-emerald-50 text-emerald-700",
+  inactive: "bg-gray-100 text-gray-500",
+};
+
+function ToggleButton({ projectCode }: { projectCode: ProjectCode }) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const isDeactivate = projectCode.status === "active";
+
+  function handleClick() {
+    const action = isDeactivate ? "deactivate" : "activate";
+    if (!window.confirm(`Are you sure you want to ${action} this project code?`)) return;
+    setError(null);
+    startTransition(async () => {
+      const result = await toggleProjectCodeStatus(projectCode.id);
+      if ("error" in result) setError(result.error);
+    });
+  }
+
+  return (
+    <span className="flex items-center gap-1">
+      <button
+        type="button"
+        disabled={isPending}
+        onClick={handleClick}
+        className="btn-secondary text-xs py-1 px-2"
+        style={isDeactivate ? { color: "#b45309" } : { color: "#16a34a" }}
+        title={isDeactivate ? "Deactivate this project code" : "Activate this project code"}
+      >
+        {isPending ? "…" : isDeactivate ? "Deactivate" : "Activate"}
+      </button>
+      {error && <span className="text-xs text-red-600">{error}</span>}
+    </span>
+  );
 }
 
 export function ProjectCodeTable({ projectCodes, filters }: Props) {
@@ -46,7 +84,7 @@ export function ProjectCodeTable({ projectCodes, filters }: Props) {
           <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
         <p className="text-xs leading-relaxed" style={{ color: "#1d4ed8" }}>
-          This list is maintained by a scheduled sync job and is <strong>read-only</strong> in the portal — there is no Add, Edit, or Delete.
+          This list is synced from the master Google Sheet — there is no Add, Edit, or Delete here. You can <strong>activate/deactivate</strong> a code below.
         </p>
       </div>
 
@@ -79,6 +117,8 @@ export function ProjectCodeTable({ projectCodes, filters }: Props) {
                 <tr className="border-b border-surface-100 bg-surface-50">
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Project Code</th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Project Name</th>
+                  <th className="px-5 py-3.5 text-left text-xs font-semibold text-surface-400 uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3.5 text-right text-xs font-semibold text-surface-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-100">
@@ -99,6 +139,19 @@ export function ProjectCodeTable({ projectCodes, filters }: Props) {
                       </span>
                     </td>
                     <td className="px-5 py-4 font-medium text-surface-800">{p.name}</td>
+                    <td className="px-5 py-4">
+                      <span
+                        className={`badge ${STATUS_COLORS[p.status] ?? ""}`}
+                        style={{ textTransform: "capitalize" }}
+                      >
+                        {p.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center justify-end">
+                        <ToggleButton projectCode={p} />
+                      </div>
+                    </td>
                   </tr>
                 ))}
               </tbody>

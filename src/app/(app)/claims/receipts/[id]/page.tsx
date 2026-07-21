@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { requireRole } from "@/lib/session";
 import { db } from "@/db";
-import { claim, department, class_, teamSplit } from "@/db/schema";
+import { claim, department, class_, teamSplit, projectCode } from "@/db/schema";
 import { eq, and, isNull, inArray } from "drizzle-orm";
 import { ClaimOverviewCard } from "./_components/ClaimOverviewCard";
 import { ReceiptsSummaryCard } from "./_components/ReceiptsSummaryCard";
@@ -105,9 +105,31 @@ export default async function ClaimDetailPage({
         }
       }
     }
+    // Only active project codes are selectable on the form.
     projectCodes = await db.query.projectCode.findMany({
+      where: (p, { eq: e }) => e(p.status, "active"),
       orderBy: (p, { asc }) => [asc(p.code)],
     });
+    // If editing and the currently assigned project code is inactive, inject it so the form
+    // can display it as "(inactive)" and the server will accept it unchanged.
+    if (editingReceipt?.projectCodeId) {
+      const hasCurrentCode = projectCodes.some((p) => p.id === editingReceipt.projectCodeId);
+      if (!hasCurrentCode) {
+        const inactiveCode = await db.query.projectCode.findFirst({
+          where: eq(projectCode.id, editingReceipt.projectCodeId),
+        });
+        if (inactiveCode) {
+          projectCodes = [
+            ...projectCodes,
+            {
+              id: inactiveCode.id,
+              code: inactiveCode.code,
+              name: `${inactiveCode.name} (inactive)`,
+            },
+          ];
+        }
+      }
+    }
   }
 
   return (
