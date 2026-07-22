@@ -1,8 +1,17 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/db";
-import { claim, receipt, statement, statementVerificationAttempt } from "@/db/schema";
+import {
+  claim,
+  class_,
+  department,
+  receipt,
+  statement,
+  statementVerificationAttempt,
+  teamSplit,
+} from "@/db/schema";
 import {
   OpusError,
+  type ReceiptMeta,
   executeJob,
   getJobResultFile,
   getJobStatus,
@@ -103,14 +112,23 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
   for (const row of claimed) {
     console.log(`${SUBMIT_LOG} Processing attempt ${row.attemptId} (statement ${row.statementDisplayId}).`);
 
-    // 1. Load receipts for the claim.
+    // 1. Load receipts for the claim, joining the name lookups the metadata
+    //    input needs (opus-api.md §6.1). department/class are notNull FKs →
+    //    inner join; team_split is nullable → left join.
     const receipts = await db
       .select({
         id: receipt.id,
         driveFileId: receipt.driveFileId,
         fileName: receipt.fileName,
+        departmentName: department.name,
+        className: class_.name,
+        teamSplitName: teamSplit.name,
+        projectCode: receipt.projectCode,
       })
       .from(receipt)
+      .innerJoin(department, eq(receipt.departmentId, department.id))
+      .innerJoin(class_, eq(receipt.classId, class_.id))
+      .leftJoin(teamSplit, eq(receipt.teamSplitId, teamSplit.id))
       .where(eq(receipt.claimId, row.claimId));
 
     if (receipts.length === 0) {
@@ -127,7 +145,7 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
 
     // 2. Upload the statement + every receipt to Opus.
     let statementFileUrl: string;
-    const receiptFileUrls: string[] = [];
+    const receiptMetas: ReceiptMeta[] = [];
     try {
       // Statement.
       const stmtUpload = await getUploadUrl({
@@ -154,7 +172,15 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
           body: file.buffer,
           contentType: file.mimeType,
         });
-        receiptFileUrls.push(upload.fileUrl);
+        // Pair the uploaded fileUrl with the receipt's metadata (nulls → "").
+        // executeJob derives the metadata `filename` from this fileUrl's basename.
+        receiptMetas.push({
+          fileUrl: upload.fileUrl,
+          department: r.departmentName ?? "",
+          class: r.className ?? "",
+          projectCode: r.projectCode ?? "",
+          teamSplit: r.teamSplitName ?? "",
+        });
       }
     } catch (err) {
       const fromOpus = err instanceof OpusError;
@@ -194,7 +220,7 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
       const { raw } = await executeJob({
         jobExecutionId,
         statementFileUrl,
-        receiptFileUrls,
+        receipts: receiptMetas,
         netsuiteFolderId: row.claimDriveNetsuiteFolderId,
       });
       await db

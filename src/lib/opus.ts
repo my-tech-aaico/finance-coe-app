@@ -5,12 +5,14 @@
 const API_URL = process.env.OPUS_API_URL ?? "https://operator.opus.com";
 const SERVICE_KEY = process.env.OPUS_SERVICE_KEY ?? "";
 const WORKFLOW_ID = process.env.OPUS_WORKFLOW_ID ?? "";
+const WORKSPACE_ID = process.env.OPUS_WORKSPACE_ID ?? "";
 const WORKFLOW_VERSION = process.env.OPUS_WORKFLOW_VERSION ?? "";
 const CALLBACK_URL = process.env.OPUS_CALLBACK_URL; // optional, future use
 const VAR_STATEMENT = process.env.OPUS_VAR_STATEMENT ?? "";
 const VAR_RECEIPTS = process.env.OPUS_VAR_RECEIPTS ?? "";
 const VAR_DESTINATION = process.env.OPUS_VAR_DESTINATION ?? "";
 const VAR_NETSUITE_FOLDER = process.env.OPUS_VAR_NETSUITE_FOLDER ?? "";
+const VAR_METADATA = process.env.OPUS_VAR_METADATA ?? "";
 const TIMEOUT_MS = Number(process.env.OPUS_REQUEST_TIMEOUT_MS ?? 60_000);
 
 export class OpusError extends Error {
@@ -87,7 +89,9 @@ export async function getUploadUrl(input: {
   const data = (await opusJson("POST", "/job/file/upload", {
     fileExtension: input.fileExtension,
     originalName: input.originalName,
-    accessScope: "all",
+    accessScope: "workspace",
+    workflowId: WORKFLOW_ID,
+    workspaceId: WORKSPACE_ID,
   })) as { presignedUrl?: unknown; fileUrl?: unknown };
 
   if (typeof data.presignedUrl !== "string" || typeof data.fileUrl !== "string") {
@@ -141,11 +145,27 @@ export async function initiateJob(): Promise<{ jobExecutionId: string }> {
   return { jobExecutionId: data.jobExecutionId };
 }
 
+/** Per-receipt data for the ${OPUS_VAR_RECEIPTS} array + ${OPUS_VAR_METADATA} (opus-api.md §6.1). */
+export type ReceiptMeta = {
+  fileUrl: string; // Opus fileUrl from GetUploadURL; metadata filename = its basename
+  department: string; // department.name ("" if null)
+  class: string; // class.name ("" if null)
+  projectCode: string; // receipt.projectCode snapshot ("" if null)
+  teamSplit: string; // team_split.name ("" if null)
+};
+
+/** Basename of an Opus media fileUrl (last path segment; query/fragment stripped, no decode). */
+function fileUrlBasename(fileUrl: string): string {
+  const noQuery = fileUrl.split(/[?#]/, 1)[0];
+  const segment = noQuery.slice(noQuery.lastIndexOf("/") + 1);
+  return segment;
+}
+
 /** opus-api.md §6 — run the job against the uploaded fileUrls. */
 export async function executeJob(input: {
   jobExecutionId: string;
   statementFileUrl: string;
-  receiptFileUrls: string[];
+  receipts: ReceiptMeta[];
   netsuiteFolderId: string;
 }): Promise<{ raw: unknown }> {
   const jobPayloadSchemaInstance: Record<string, unknown> = {
@@ -155,7 +175,7 @@ export async function executeJob(input: {
       displayName: "Statement File",
     },
     [VAR_RECEIPTS]: {
-      value: input.receiptFileUrls,
+      value: input.receipts.map((r) => r.fileUrl),
       type: "array",
       displayName: "Supporting Receipts",
     },
@@ -170,6 +190,25 @@ export async function executeJob(input: {
       displayName: "Netsuite Folder ID",
     },
   };
+
+  // opus-api.md §6.1 — per-receipt metadata as a JSON *string* (double-encoded).
+  // Omitted entirely when OPUS_VAR_METADATA is unset (mirrors callbackUrl below).
+  if (VAR_METADATA) {
+    const metadata = {
+      file: input.receipts.map((r) => ({
+        filename: fileUrlBasename(r.fileUrl),
+        department: r.department,
+        class: r.class,
+        projectCode: r.projectCode,
+        "team-split": r.teamSplit,
+      })),
+    };
+    jobPayloadSchemaInstance[VAR_METADATA] = {
+      value: JSON.stringify(metadata),
+      type: "str",
+      displayName: "metadata",
+    };
+  }
 
   const body: Record<string, unknown> = {
     jobExecutionId: input.jobExecutionId,
