@@ -83,6 +83,7 @@ The full Opus wire contract — endpoints, bodies, status vocabulary — lives i
 | `OPUS_VAR_RECEIPTS`              | `workflow_input_...`          | Execute payload key for the receipts array (`opus-api.md` §6).                            |
 | `OPUS_VAR_DESTINATION`           | `workflow_input_...`          | Execute payload key holding the literal `"netsuite"` (`opus-api.md` §6).                  |
 | `OPUS_VAR_NETSUITE_FOLDER`       | `workflow_input_...`          | Execute payload key for the netsuite folder id (`opus-api.md` §6).                        |
+| `OPUS_VAR_METADATA`              | `workflow_input_...`          | Execute payload key for the per-receipt metadata JSON string (`opus-api.md` §6.1).        |
 | `OPUS_REQUEST_TIMEOUT_MS`          | `60000`                       | Per-request timeout for Opus calls (`AbortSignal.timeout`). Used to classify timeouts.   |
 | `VERIFICATION_SUBMIT_BATCH_SIZE`   | `5`                           | Max `queued` attempts processed per submission run. Default `5` per `new-new.md`.        |
 | `VERIFICATION_POLL_BATCH_SIZE`     | `5`                           | Max `in_progress` attempts processed per update run. Default `5` per `new-new.md`.       |
@@ -155,15 +156,22 @@ export async function uploadFileToPresignedUrl(input: {
 export async function initiateJob(): Promise<{ jobExecutionId: string }>;
 
 // opus-api.md §6 — run the job against the uploaded fileUrls
+export type ReceiptMeta = {
+  fileUrl: string;       // the Opus fileUrl from GetUploadURL for this receipt
+  department: string;    // department.name   ("" if null)
+  class: string;         // class.name        ("" if null)
+  projectCode: string;   // receipt.projectCode snapshot ("" if null)
+  teamSplit: string;     // team_split.name   ("" if null)
+};
 export async function executeJob(input: {
   jobExecutionId: string;
   statementFileUrl: string;
-  receiptFileUrls: string[];
+  receipts: ReceiptMeta[];        // was: receiptFileUrls: string[]
   netsuiteFolderId: string;
 }): Promise<{ raw: unknown }>;   // raw stored into opusResponse
 ```
 
-`executeJob` builds the `jobPayloadSchemaInstance` from the `OPUS_VAR_*` keys and includes `callbackUrl` only when `OPUS_CALLBACK_URL` is set (`opus-api.md` §6). It treats a non-2xx HTTP status **or** an inner `statusCode >= 400` as a failed Execute → throws `OpusError`.
+`executeJob` builds the `jobPayloadSchemaInstance` from the `OPUS_VAR_*` keys and includes `callbackUrl` only when `OPUS_CALLBACK_URL` is set (`opus-api.md` §6). The `${OPUS_VAR_RECEIPTS}` array is `input.receipts.map(r => r.fileUrl)`; the `${OPUS_VAR_METADATA}` entry is the **JSON-stringified** `{ file: [...] }` built from `input.receipts` (`opus-api.md` §6.1) — each entry's `filename` is the **basename of `r.fileUrl`**, with `department`/`class`/`projectCode`/`team-split` from the row (empty string for nulls). **The metadata entry is included only when `OPUS_VAR_METADATA` is set** (mirrors `callbackUrl`); otherwise omitted. It treats a non-2xx HTTP status **or** an inner `statusCode >= 400` as a failed Execute → throws `OpusError`.
 
 ### 5.2 Update-side functions (used by §7)
 
@@ -266,11 +274,11 @@ Flipping to `in_progress` **before** the Opus call is deliberate and matches `ne
 
 **Step 2 — Per attempt: upload files, initiate, execute, record.** Iterate `claimed` **sequentially** (not `Promise.all` — keeps Drive/Opus load predictable and log output readable, matching `fx-scheduler.ts`'s sequential loop). Each attempt runs the Opus submission call sequence (`opus-api.md` §2). For each row:
 
-1. **Load receipts** for `claimId`: `SELECT id, driveFileId, fileName FROM receipt WHERE claimId = ?`. **If this returns zero rows**, the claim has nothing to cross-check the statement against — fail the attempt immediately via `finalizeAttempt({ attemptId, statementId, status: "failed", remarks: "No receipts on the linked claim to verify against." })` and skip to the next attempt (no Drive download, no Opus call). See §6.3.
+1. **Load receipts** for `claimId`, joining the name lookups the metadata input needs: `SELECT receipt.id, receipt.driveFileId, receipt.fileName, receipt.projectCode, department.name, class.name, team_split.name FROM receipt INNER JOIN department ... INNER JOIN class ... LEFT JOIN team_split ... WHERE receipt.claimId = ?` (LEFT join `team_split` — `teamSplitId` is nullable). **If this returns zero rows**, the claim has nothing to cross-check the statement against — fail the attempt immediately via `finalizeAttempt({ attemptId, statementId, status: "failed", remarks: "No receipts on the linked claim to verify against." })` and skip to the next attempt (no Drive download, no Opus call). See §6.3.
 2. **Upload each file to Opus** — the statement file (`statementDriveFileId`) and every receipt's `driveFileId` (1 statement + N receipts, up to ~20, ≤10 MB each — `opus-api.md` §2). For each file:
    - `getUploadUrl({ fileExtension, originalName })` derived from the stored `fileName` → `{ presignedUrl, fileUrl }`.
    - Download the file from Drive into a `Buffer` (`downloadDriveFileAsBuffer`, §6.2) and `uploadFileToPresignedUrl({ presignedUrl, body: buffer, contentType })`. `contentType` is `statement.fileMimeType` for the statement, or the Drive-metadata `mimeType` for a receipt (the `receipt` table has no MIME column). Buffering keeps `Content-Length` known (`opus-api.md` §4).
-   - Collect the returned `fileUrl`s, tracking which is the statement and which are receipts.
+   - Collect the returned `fileUrl`s, tracking which is the statement and which are receipts. **For each receipt, keep its `fileUrl` paired with its `{ department.name, class.name, projectCode, team_split.name }` (nulls → `""`)** — this becomes the `ReceiptMeta[]` passed to `executeJob`, which derives the metadata `filename` from the `fileUrl` basename (§5.1, `opus-api.md` §6.1).
    - Any Drive download failure or upload-URL/PUT failure (404 file-not-found, folder-not-found, permission) → **fail this attempt** with `remarks = "File/Folder is not found, please check in Google Drive."` (verbatim from `new-new.md`). Skip to the next attempt. See §8.
 3. **Initiate** via `initiateJob()` (`opus-api.md` §5) → `jobExecutionId`. **Persist it immediately** (own transaction), status stays `in_progress`:
 
@@ -281,7 +289,7 @@ await db.update(statementVerificationAttempt)
 ```
 
    Persisting before Execute is deliberate: if Execute then fails, the row still carries the `opusJobId`, so the §7.4 **24h** timeout (not the 60-min crashed-submit timeout) governs cleanup. See §7.4's known-limitation note.
-4. **Execute** via `executeJob({ jobExecutionId, statementFileUrl, receiptFileUrls, netsuiteFolderId: row.claimDriveNetsuiteFolderId })` (`opus-api.md` §6).
+4. **Execute** via `executeJob({ jobExecutionId, statementFileUrl, receipts, netsuiteFolderId: row.claimDriveNetsuiteFolderId })` (`opus-api.md` §6), where `receipts` is the `ReceiptMeta[]` assembled in step 2 (fileUrl + department/class/projectCode/team-split per receipt).
    - `OpusError` of any `kind` (incl. an inner `statusCode >= 400`) → **fail this attempt** with `remarks = "Error from OPUS, please check in OPUS or retry"` (verbatim from `new-new.md`). Skip to the next attempt. (The `opusJobId` from step 3 remains; the row is now `failed`, so the poll job skips it.)
 5. **On success** — record the Execute response:
 
@@ -321,6 +329,8 @@ Buffering (rather than passing the raw `ReadableStream` to the PUT) keeps `Conte
 ### 6.3 What gets sent to Opus
 
 Per `new-new.md`: pull the statement file and all receipt files from Google Drive, upload each to Opus, then Execute referencing their `fileUrl`s. Opus cross-checks the statement against its receipts. The submission therefore includes **the one statement file + every receipt file on the claim.**
+
+**Per-receipt metadata (`new-impl-scheduler.md`, `opus-api.md` §6.1).** Execute also carries a `${OPUS_VAR_METADATA}` input: a **JSON-stringified** `{ file: [...] }` with one entry per receipt, each `{ filename, department, class, projectCode, "team-split" }`. `filename` is the **basename of the receipt's uploaded Opus `fileUrl`** (e.g. `media_….pdf`), so the array can only be assembled after the upload loop, from the `ReceiptMeta[]` collected in §6.1 Step 2. `department`/`class`/`team-split` are the joined **`.name`** values (not `.code`); `projectCode` is the receipt's snapshot string. A null `team_split`/`projectCode` on a legacy receipt is emitted as an **empty string `""`** (all five keys always present — decision 2026-07-21). The statement file is **not** in the metadata array. The whole metadata input is **omitted when `OPUS_VAR_METADATA` is unset**.
 
 Edge case — **a claim with zero receipts**: the submit job does **not** call Opus. A statement cannot be cross-checked without receipts, so Step 2 item 1 fails the attempt fast with `remarks = "No receipts on the linked claim to verify against."` (grilled decision, 2026-05-21). This skips a pointless Opus round-trip and hands the user an actionable remark — add receipts to the claim, then click Retry Verification.
 
@@ -580,7 +590,7 @@ The schedulers run outside the Next.js runtime — they cannot call `revalidateP
 
 The Opus wire contract is now specified concretely in `opus-api.md` (endpoints, headers, bodies, status vocabulary, audit-log shape) and is no longer assumed. The remaining open points are small and all isolated inside `src/lib/opus.ts`:
 
-1. **Execute payload variable names** — the four `OPUS_VAR_*` keys are workflow-version-specific and carried as config (`opus-api.md` §6); confirm them against the live workflow version before first run.
+1. **Execute payload variable names** — the five `OPUS_VAR_*` keys (incl. `OPUS_VAR_METADATA`) are workflow-version-specific and carried as config (`opus-api.md` §6/§6.1); confirm them against the live workflow version before first run.
 2. **`base64_file_content` location** — assumed to live in the `Output` node's `execution_output` (`opus-api.md` §8). Confirm the node name is exactly `Output` in the production workflow; adjust the extraction in `getJobResultFile` if it differs.
 3. **Status vocabulary completeness** — the observed values are `in_progress`/`completed`/`failed`/`timed_out`/`stopped` (`opus-api.md` §7.1). Any unrecognized future value is treated as `in_progress` and caught by the §7.4 timeout; extend the map if Opus adds states.
 4. **`callbackUrl`** — currently optional/unused; the app polls (§7). Wiring a push `/opus/callback` route is future scope (`opus-api.md` §6).
@@ -617,7 +627,7 @@ Keep the boundary intact — *submission returns a job id; getJobStatus returns 
 **Manual runbook (decision 2026-06-15).** The repo has no test framework and none is added for this workstream (matching `fx-scheduler.ts`, which has no tests). Run these by hand against a sandbox Opus + a test claim; "stub" below means point `OPUS_API_URL` at a local mock or use a workflow/job known to produce that outcome. The pure helpers (status normalization, magic-byte detection) are simple enough to eyeball via a one-off `tsx` snippet.
 
 1. **Migration** — `db:generate` + `db:migrate`; confirm `remarks` exists and existing rows are `NULL`.
-2. **Happy path, submission** — create a `queued` attempt (upload a statement with the "Start verification immediately" box, or click "Start Verification"). Run `npm run verification-submit`. Stub GetUploadURL/PUT/Initiate/Execute. Expect: each file uploaded (GetUploadURL + PUT per file), `opusJobId` populated after Initiate, Execute called with the statement + receipt `fileUrl`s and `claim.driveNetsuiteFolderId`, attempt `in_progress`, `statement.verificationStatus = in_progress`, Detail accordion shows the In Progress panel.
+2. **Happy path, submission** — create a `queued` attempt (upload a statement with the "Start verification immediately" box, or click "Start Verification"). Run `npm run verification-submit`. Stub GetUploadURL/PUT/Initiate/Execute. Expect: each file uploaded (GetUploadURL + PUT per file), `opusJobId` populated after Initiate, Execute called with the statement + receipt `fileUrl`s, `claim.driveNetsuiteFolderId`, and a `metadata` string whose `file[]` has one entry per receipt with the correct `filename` (uploaded media basename) + department/class/team-split **names** and the projectCode **snapshot** (empty string for any null), attempt `in_progress`, `statement.verificationStatus = in_progress`, Detail accordion shows the In Progress panel.
 3. **Happy path, poll + result upload** — with an `in_progress` attempt, run `npm run verification-poll`. Stub `getJobStatus` → `completed` and the audit log to return `base64_file_content`, `file_title`, and a Drive `netsuite_folder_id`. Expect: result file decoded, extension detected, uploaded as `file_title`+`_`+timestamp+ext into the `netsuite_folder_id` folder; attempt `success`, `opusResponse` holds the **small status body** (not the audit log), `remarks` NULL, statement mirrored, accordion green.
 3a. **New file per retry** — re-verify the same statement (a second attempt, so a distinct `updatedAt`) so a second `completed` job returns the **same** `file_title`; run poll. Expect: a **second, distinctly-timestamped** file appears in the netsuite folder alongside the first (**two files, one per attempt**) — the prior result is not overwritten (`opus-api.md` §8.2).
 3b. **Concurrent re-poll of one attempt is idempotent** — run poll twice against the **same** `in_progress` attempt (same `updatedAt`), both stubbed `completed`. Expect: the same filename both times → overwrite-by-name updates in place → **one file** (no duplicate for a single attempt).
@@ -636,3 +646,5 @@ Keep the boundary intact — *submission returns a job id; getJobStatus returns 
 16. **In-flight protection** — create an `in_progress` attempt with `opusJobId = NULL` and a *recent* `updatedAt`; run poll. Expect: the row is skipped untouched (not failed), confirming the poll job won't clobber an attempt a submission run is still processing.
 17. **60-min crashed-submit timeout** — create an `in_progress` attempt with `opusJobId = NULL` and `updatedAt` older than `VERIFICATION_SUBMIT_STUCK_MINUTES`; run poll. Expect: force-failed, `remarks = "Verification did not start in time, please retry."`
 18. **Zero receipts** — queue a verification for a statement whose claim has no receipt rows; run submit. Expect: attempt `failed` with **no** Opus call made, `remarks = "No receipts on the linked claim to verify against."`
+19. **Metadata construction** — queue a claim with ≥2 receipts, one carrying a **null** `teamSplitId`/`projectCode` (legacy row); run submit. Inspect the Execute payload. Expect: `${OPUS_VAR_METADATA}` is a JSON **string**; parsed, its `file[]` has one entry per receipt; each `filename` equals the basename of that receipt's uploaded `fileUrl` (not the original name); department/class/team-split are the joined **names** and projectCode is the receipt **snapshot**; the legacy receipt's null fields are `""` (all five keys present); order matches the `${OPUS_VAR_RECEIPTS}` array; the statement file is absent from `file[]`.
+20. **Metadata omitted when unconfigured** — unset `OPUS_VAR_METADATA`; run submit. Expect: the Execute payload contains **no** metadata key at all (not an empty-keyed entry), and submission otherwise proceeds normally.

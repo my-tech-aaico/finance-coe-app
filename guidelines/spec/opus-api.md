@@ -31,9 +31,9 @@ All shapes below are taken from the verified `new-new.md` workflow notes and a r
 
 Per attempt, in this order:
 
-1. **For each file** (1 statement + N receipts): `GetUploadURL` (§3) → `uploadFileToPresignedUrl` (§4).
+1. **For each file** (1 statement + N receipts): `GetUploadURL` (§3) → `uploadFileToPresignedUrl` (§4). Keep the `fileUrl` each receipt upload returns paired with that receipt's DB row — the §6 `metadata` input needs the uploaded media basename plus the receipt's department/class/projectCode/team-split.
 2. `Initiate` (§5) → `jobExecutionId`. **Persist `opusJobId` immediately**, before step 3.
-3. `Execute` (§6) with the `jobExecutionId` and the collected `fileUrl`s.
+3. `Execute` (§6) with the `jobExecutionId`, the collected `fileUrl`s, and the assembled `metadata` string.
 
 File constraints: exactly **1** statement file; **up to ~20** receipt files (not a hard cap);
 **≤ 10 MB per file**.
@@ -49,13 +49,17 @@ body:
 {
   "fileExtension": ".pdf",
   "originalName": "receipt_2.pdf",
-  "accessScope": "all"
+  "accessScope": "workspace",
+  "workflowId": "${OPUS_WORKFLOW_ID}",
+  "workspaceId": "${OPUS_WORKSPACE_ID}"
 }
 response:
 { "presignedUrl": "{PRESIGNED_URL}", "fileUrl": "{FILE_URL}" }
 ```
 
 - `fileExtension` / `originalName` come from the statement's / receipt's stored `fileName`.
+- `accessScope` is the literal `"workspace"`; `workflowId` reuses `OPUS_WORKFLOW_ID` (same
+  value as Initiate §5) and `workspaceId` is the `OPUS_WORKSPACE_ID` env var (§9).
 - Keep the returned `fileUrl` (stable Opus media URL); it is what `Execute` references.
 
 ## 4. File Upload (presigned PUT)
@@ -113,6 +117,11 @@ body:
       "value": "{claim.driveNetsuiteFolderId}",
       "type": "str",
       "displayName": "Netsuite Folder ID"
+    },
+    "${OPUS_VAR_METADATA}": {
+      "value": "{stringified metadata JSON — see §6.1}",
+      "type": "str",
+      "displayName": "metadata"
     }
   }
 }
@@ -120,10 +129,52 @@ success: { "statusCode": 200, "message": "Job Started", ... }
 error:   { "statusCode": 500, "message": "Request failed with status code 422", ... }
 ```
 
-- The four `OPUS_VAR_*` keys are the workflow's fixed input-variable names; carry them as
+- The five `OPUS_VAR_*` keys are the workflow's fixed input-variable names; carry them as
   config because they are workflow-version-specific. (In the captured audit log the live
   names were `workflow_input_2b3t71ss6` = statement file, `workflow_input_mwkb503th` =
-  receipts array, `workflow_input_635kk6x2s` = netsuite folder id.)
+  receipts array, `workflow_input_635kk6x2s` = netsuite folder id,
+  `workflow_input_2l05z7zw6` = netsuite folder name (`"netsuite"`),
+  `workflow_input_bz12gc3wp` = metadata.)
+
+### 6.1 The `metadata` input (per-receipt cross-check data)
+
+`${OPUS_VAR_METADATA}` carries, as a **JSON string** (i.e. double-encoded — the `value` is a
+string, not an object), the list of receipt files with the financial metadata Opus uses to
+cross-check each one:
+
+```jsonc
+// the value of ${OPUS_VAR_METADATA} is JSON.stringify(...) of:
+{
+  "file": [
+    {
+      "filename":    "media_4cf2d6b9-….pdf",   // basename of the receipt's Opus fileUrl (§3/§4), NOT the original name
+      "department":  "crt-celcomdigi",           // receipt → department.name
+      "class":       "testing",                  // receipt → class.name
+      "projectCode": "AIA/APDMY/00013",          // receipt.projectCode snapshot string (uppercase)
+      "team-split":  "team-split-a"              // receipt → team_split.name
+    }
+    // … one entry per receipt file, same order as the ${OPUS_VAR_RECEIPTS} array
+  ]
+}
+```
+
+- **One entry per receipt.** The **statement file is not included** — metadata describes only
+  the supporting receipts.
+- **`filename` is the uploaded media basename** taken from the `fileUrl` GetUploadURL returned
+  for that receipt (e.g. `fileUrl` `…/uploaded/media_487b5def-….pdf` → `media_487b5def-….pdf`).
+  It is therefore only knowable *after* the per-file upload loop — assemble the array while
+  collecting the receipt `fileUrl`s, not from the DB `fileName`.
+- **Value sources:** `department`/`class`/`team-split` are the `.name` columns of the joined
+  `department`/`class`/`team_split` rows (**not** `.code` — decision 2026-07-21); `projectCode`
+  is the receipt's own `projectCode` snapshot string (no `project_code` join, no FK fallback).
+  Note `department`/`class`/`team-split` reflect the **current** name (live join, no snapshot),
+  whereas `projectCode` is frozen at receipt-write time.
+- **NULL handling:** legacy receipts may have a null `team_split_id` or `projectCode`. Emit
+  **all five keys always**, using an **empty string `""`** for any null value, so the array
+  shape stays uniform for the Opus parser (decision 2026-07-21).
+- **Omitted when unconfigured:** the entire `${OPUS_VAR_METADATA}` entry is sent **only when
+  the `OPUS_VAR_METADATA` env var is set** — exactly like `callbackUrl` (below). An unset var
+  degrades to "no metadata sent" rather than a malformed/empty-keyed entry.
 - **`callbackUrl` is optional and reserved for future use.** For now Opus completion is
   detected by **polling** (`scheduler.md` §7), not by a callback. Send the field only when
   `OPUS_CALLBACK_URL` is set; the app exposes **no** `/opus/callback` route yet. (Wiring a
@@ -256,11 +307,13 @@ while **separate attempts** get distinct timestamps and thus separate files.
 |----------|---------|---------|
 | `OPUS_API_URL` | `https://operator.opus.com` | Base URL |
 | `OPUS_SERVICE_KEY` | `svc-...` | `x-service-key` header value |
-| `OPUS_WORKFLOW_ID` | `d1fa11aa-...` | Initiate `workflowId` |
+| `OPUS_WORKFLOW_ID` | `d1fa11aa-...` | Initiate `workflowId`; also GetUploadURL `workflowId` (§3) |
+| `OPUS_WORKSPACE_ID` | `f2f2fde2-...` | GetUploadURL `workspaceId` (§3) |
 | `OPUS_WORKFLOW_VERSION` | `37.0` | Initiate `version` |
 | `OPUS_CALLBACK_URL` | *(unset)* | Optional, future use; omit `callbackUrl` when unset |
 | `OPUS_VAR_STATEMENT` | `workflow_input_...` | Execute payload key for the statement file |
 | `OPUS_VAR_RECEIPTS` | `workflow_input_...` | Execute payload key for the receipts array |
 | `OPUS_VAR_DESTINATION` | `workflow_input_...` | Execute payload key holding the literal `"netsuite"` |
 | `OPUS_VAR_NETSUITE_FOLDER` | `workflow_input_...` | Execute payload key for the netsuite folder id |
+| `OPUS_VAR_METADATA` | `workflow_input_...` | Execute payload key for the per-receipt metadata JSON string (§6.1) |
 | `OPUS_REQUEST_TIMEOUT_MS` | `60000` | Per-request timeout |
