@@ -148,11 +148,15 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
     const receiptMetas: ReceiptMeta[] = [];
     try {
       // Statement.
+      console.log(`${SUBMIT_LOG} Attempt ${row.attemptId}: [get-upload-url] statement "${row.statementFileName}".`);
       const stmtUpload = await getUploadUrl({
         fileExtension: fileExtensionOf(row.statementFileName),
         originalName: row.statementFileName,
       });
       const stmtFile = await downloadDriveFileAsBuffer(row.statementDriveFileId);
+      console.log(
+        `${SUBMIT_LOG} Attempt ${row.attemptId}: [file-upload] statement "${row.statementFileName}" (${stmtFile.buffer.length} bytes) → ${stmtUpload.fileUrl}.`,
+      );
       await uploadFileToPresignedUrl({
         presignedUrl: stmtUpload.presignedUrl,
         body: stmtFile.buffer,
@@ -161,12 +165,20 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
       statementFileUrl = stmtUpload.fileUrl;
 
       // Receipts.
+      let receiptIdx = 0;
       for (const r of receipts) {
+        receiptIdx++;
+        console.log(
+          `${SUBMIT_LOG} Attempt ${row.attemptId}: [get-upload-url] receipt ${receiptIdx}/${receipts.length} "${r.fileName}".`,
+        );
         const upload = await getUploadUrl({
           fileExtension: fileExtensionOf(r.fileName),
           originalName: r.fileName,
         });
         const file = await downloadDriveFileAsBuffer(r.driveFileId);
+        console.log(
+          `${SUBMIT_LOG} Attempt ${row.attemptId}: [file-upload] receipt ${receiptIdx}/${receipts.length} "${r.fileName}" (${file.buffer.length} bytes) → ${upload.fileUrl}.`,
+        );
         await uploadFileToPresignedUrl({
           presignedUrl: upload.presignedUrl,
           body: file.buffer,
@@ -198,7 +210,9 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
     // 3. Initiate — persist the job id immediately (before Execute).
     let jobExecutionId: string;
     try {
+      console.log(`${SUBMIT_LOG} Attempt ${row.attemptId}: [initiate] initializing workflow.`);
       ({ jobExecutionId } = await initiateJob());
+      console.log(`${SUBMIT_LOG} Attempt ${row.attemptId}: [initiate] job ${jobExecutionId}.`);
       await db
         .update(statementVerificationAttempt)
         .set({ opusJobId: jobExecutionId, updatedAt: new Date() })
@@ -217,6 +231,9 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
 
     // 4. Execute — then record the response. Status stays in_progress.
     try {
+      console.log(
+        `${SUBMIT_LOG} Attempt ${row.attemptId}: [execute] job ${jobExecutionId} (1 statement, ${receiptMetas.length} receipts).`,
+      );
       const { raw } = await executeJob({
         jobExecutionId,
         statementFileUrl,
