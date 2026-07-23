@@ -184,15 +184,15 @@ export async function getJobStatus(jobExecutionId: string): Promise<{
   raw: unknown;        // full parsed body — stored into opusResponse
 }>;
 
-// opus-api.md §8 — fetch audit log and extract the single base64 output file
+// opus-api.md §8 — fetch audit log and extract the single CSV-text output file
 export async function getJobResultFile(jobExecutionId: string): Promise<{
-  buffer: Buffer;            // decoded from Output.execution_output base64_file_content
-  fileTitle: string;        // Output.execution_output file_title (name without extension)
+  buffer: Buffer;            // UTF-8 encoding of Output.execution_output CSV text
+  fileTitle: string;        // Output.execution_output file name, extension stripped
   netsuiteFolderId: string; // Output.execution_output netsuite_folder_id (a Drive folder id)
-} | null>;                   // null when no base64_file_content is present
+} | null>;                   // null when no CSV-text content is present
 ```
 
-The audit log is **not** returned for storage — it embeds the whole file as base64 (`opus-api.md` §8). `opusResponse` on success holds the small `getJobStatus` body only.
+The audit log is **not** returned for storage — it is large (`opus-api.md` §8). `opusResponse` on success holds the small `getJobStatus` body only. As of 2026-07-23 the result is returned as **plain CSV text** (no longer base64), always a `.csv` file.
 
 `getJobStatus` owns the raw→`state` normalization map (`opus-api.md` §7.1) in **one** clearly-commented block: `completed → success`; `failed`/`timed_out`/`stopped → failed`; `in_progress` (and any unrecognized value) → `in_progress`. The caller (§7) maps the distinct raw failure values to distinct `remarks`.
 
@@ -429,14 +429,14 @@ On `state: "success"` (raw `completed`), before finalizing, the poll job retriev
 Steps (full contract in `opus-api.md` §8):
 
 1. `getJobResultFile(opusJobId)` → fetches the audit log and reads `audit.nodes_execution_data["Output"].execution_output`, returning `{ buffer, fileTitle, netsuiteFolderId }`:
-   - `buffer` — base64-decoded `base64_file_content`. **Exactly one** file expected.
-   - `fileTitle` — the result file's name **without** extension (`file_title`).
+   - `buffer` — the CSV text encoded to UTF-8 (`Buffer.from(text, "utf-8")`). **Exactly one** file expected.
+   - `fileTitle` — the result file's name with any extension **stripped**.
    - `netsuiteFolderId` — the **Drive** folder id to upload into (`netsuite_folder_id`; Opus echoes back the Drive folder id). Fall back to `claim.driveNetsuiteFolderId` if absent.
-2. Detect the extension from the bytes (magic bytes — `opus-api.md` §8.1: `%PDF`→`.pdf`, `PK`→`.xlsx`, UTF-8 header with `EXTERNALID`/`ID,`/`DATE,`→`.csv`). Final filename = `fileTitle` + `_` + a **per-attempt timestamp** (from the attempt's `updatedAt`, `YYYYMMDDHHMMSS`) + extension (`opus-api.md` §8.2); `mimeType` derived from the extension.
+2. The extension is always `.csv` (no magic-byte detection). A defensive CSV normalizer rewrites any literal `\n` sequences into real newlines (`opus-api.md` §8.1). Final filename = `fileTitle` + `_` + a **per-attempt timestamp** (from the attempt's `updatedAt`, `YYYYMMDDHHMMSS`) + `.csv` (`opus-api.md` §8.2); `mimeType` is `text/csv`.
 3. Upload via `uploadDriveFileFromBuffer(netsuiteFolderId, fileName, buffer, mimeType)` (below). Each successful attempt writes a **distinct** timestamped file, so the netsuite folder **accumulates one result per attempt** (a re-verify adds a second file). The helper still **overwrites by name**, but since the timestamp comes from the attempt's stable `updatedAt`, that only collapses **concurrent re-polls of the same attempt** — separate attempts get separate files (`opus-api.md` §8.2). The poll select does **not** need the netsuite folder (it comes from the audit log); keep the `claim` join only for the `driveNetsuiteFolderId` fallback.
 4. **Finalize as `success` regardless of the upload outcome:**
    - upload OK → `finalizeAttempt({ ..., status: "success", opusResponse: statusRaw, remarks: null })`.
-   - `getJobResultFile` returned `null` (no `base64_file_content`) → `success` with `remarks = "Verification succeeded but no result file was returned by OPUS."`
+   - `getJobResultFile` returned `null` (no CSV-text content) → `success` with `remarks = "Verification succeeded but no result file was returned by OPUS."`
    - upload threw → `success` with `remarks = "Verification succeeded but the result file could not be uploaded to Google Drive."` (decision 2026-06-15 — the verification itself succeeded; the upload error is recorded, not a failure). Log the underlying error to `console.error`.
 
 **New Drive write helper — `src/lib/drive.ts`:**
@@ -508,7 +508,7 @@ The submission job's batch-claim step (§6.1 Step 1) does the `queued → in_pro
 | Opus reports job `stopped`                           | Update     | `failed`         | `Verification was stopped in OPUS, please check in OPUS or retry.` |
 | `in_progress` + `opusJobId`, past the 24h timeout (§7.4)       | Update | `failed`   | `Error from OPUS, please check in OPUS or retry`                |
 | `in_progress` + no `opusJobId`, past the 60-min timeout (§7.4) | Update | `failed`   | `Verification did not start in time, please retry.`             |
-| Opus `completed` but no `base64_file_content` in audit log (§7.5) | Update | **`success`** | `Verification succeeded but no result file was returned by OPUS.` |
+| Opus `completed` but no CSV-text content in audit log (§7.5) | Update | **`success`** | `Verification succeeded but no result file was returned by OPUS.` |
 | Opus `completed`, result file Drive upload failed (§7.5) | Update | **`success`** | `Verification succeeded but the result file could not be uploaded to Google Drive.` |
 | Opus `getJobStatus` errors (transient)               | Update     | *unchanged* (`in_progress`) | *unchanged* — retried next cycle (§7.2)               |
 
@@ -591,7 +591,7 @@ The schedulers run outside the Next.js runtime — they cannot call `revalidateP
 The Opus wire contract is now specified concretely in `opus-api.md` (endpoints, headers, bodies, status vocabulary, audit-log shape) and is no longer assumed. The remaining open points are small and all isolated inside `src/lib/opus.ts`:
 
 1. **Execute payload variable names** — the five `OPUS_VAR_*` keys (incl. `OPUS_VAR_METADATA`) are workflow-version-specific and carried as config (`opus-api.md` §6/§6.1); confirm them against the live workflow version before first run.
-2. **`base64_file_content` location** — assumed to live in the `Output` node's `execution_output` (`opus-api.md` §8). Confirm the node name is exactly `Output` in the production workflow; adjust the extraction in `getJobResultFile` if it differs.
+2. **CSV-text output location & variable ids** — the result CSV text + file name are assumed to live in the `Output` node's `execution_output` (`opus-api.md` §8). Confirm the node name is exactly `Output` and confirm the output `variable_name` ids (they changed when the result moved from a base64 blob to CSV text) in the production workflow; adjust the extraction in `getJobResultFile` if they differ.
 3. **Status vocabulary completeness** — the observed values are `in_progress`/`completed`/`failed`/`timed_out`/`stopped` (`opus-api.md` §7.1). Any unrecognized future value is treated as `in_progress` and caught by the §7.4 timeout; extend the map if Opus adds states.
 4. **`callbackUrl`** — currently optional/unused; the app polls (§7). Wiring a push `/opus/callback` route is future scope (`opus-api.md` §6).
 
@@ -624,20 +624,20 @@ Keep the boundary intact — *submission returns a job id; getJobStatus returns 
 
 ## 13. Test checklist
 
-**Manual runbook (decision 2026-06-15).** The repo has no test framework and none is added for this workstream (matching `fx-scheduler.ts`, which has no tests). Run these by hand against a sandbox Opus + a test claim; "stub" below means point `OPUS_API_URL` at a local mock or use a workflow/job known to produce that outcome. The pure helpers (status normalization, magic-byte detection) are simple enough to eyeball via a one-off `tsx` snippet.
+**Manual runbook (decision 2026-06-15).** The repo has no test framework and none is added for this workstream (matching `fx-scheduler.ts`, which has no tests). Run these by hand against a sandbox Opus + a test claim; "stub" below means point `OPUS_API_URL` at a local mock or use a workflow/job known to produce that outcome. The pure helpers (status normalization, CSV normalization) are simple enough to eyeball via a one-off `tsx` snippet.
 
 1. **Migration** — `db:generate` + `db:migrate`; confirm `remarks` exists and existing rows are `NULL`.
 2. **Happy path, submission** — create a `queued` attempt (upload a statement with the "Start verification immediately" box, or click "Start Verification"). Run `npm run verification-submit`. Stub GetUploadURL/PUT/Initiate/Execute. Expect: each file uploaded (GetUploadURL + PUT per file), `opusJobId` populated after Initiate, Execute called with the statement + receipt `fileUrl`s, `claim.driveNetsuiteFolderId`, and a `metadata` string whose `file[]` has one entry per receipt with the correct `filename` (uploaded media basename) + department/class/team-split **names** and the projectCode **snapshot** (empty string for any null), attempt `in_progress`, `statement.verificationStatus = in_progress`, Detail accordion shows the In Progress panel.
-3. **Happy path, poll + result upload** — with an `in_progress` attempt, run `npm run verification-poll`. Stub `getJobStatus` → `completed` and the audit log to return `base64_file_content`, `file_title`, and a Drive `netsuite_folder_id`. Expect: result file decoded, extension detected, uploaded as `file_title`+`_`+timestamp+ext into the `netsuite_folder_id` folder; attempt `success`, `opusResponse` holds the **small status body** (not the audit log), `remarks` NULL, statement mirrored, accordion green.
-3a. **New file per retry** — re-verify the same statement (a second attempt, so a distinct `updatedAt`) so a second `completed` job returns the **same** `file_title`; run poll. Expect: a **second, distinctly-timestamped** file appears in the netsuite folder alongside the first (**two files, one per attempt**) — the prior result is not overwritten (`opus-api.md` §8.2).
+3. **Happy path, poll + result upload** — with an `in_progress` attempt, run `npm run verification-poll`. Stub `getJobStatus` → `completed` and the audit log to return CSV text, the file name, and a Drive `netsuite_folder_id`. Expect: CSV text encoded to a buffer, uploaded as `<name>`+`_`+timestamp+`.csv` into the `netsuite_folder_id` folder; attempt `success`, `opusResponse` holds the **small status body** (not the audit log), `remarks` NULL, statement mirrored, accordion green.
+3a. **New file per retry** — re-verify the same statement (a second attempt, so a distinct `updatedAt`) so a second `completed` job returns the **same** file name; run poll. Expect: a **second, distinctly-timestamped** file appears in the netsuite folder alongside the first (**two files, one per attempt**) — the prior result is not overwritten (`opus-api.md` §8.2).
 3b. **Concurrent re-poll of one attempt is idempotent** — run poll twice against the **same** `in_progress` attempt (same `updatedAt`), both stubbed `completed`. Expect: the same filename both times → overwrite-by-name updates in place → **one file** (no duplicate for a single attempt).
 4. **Drive failure** — point a statement's `driveFileId` at a non-existent file; run submit. Expect: attempt `failed`, `remarks = "File/Folder is not found, please check in Google Drive."`, statement mirrored, accordion shows the remark in red.
 5. **Opus submission failure** — stub Execute to return inner `statusCode: 500`; run submit. Expect: attempt `failed`, `remarks = "Error from OPUS, please check in OPUS or retry"` (note: `opusJobId` from Initiate remains set).
 6. **Opus reports failed / timed_out / stopped** — stub `getJobStatus` to each raw value in turn; run poll. Expect: attempt `failed` with the matching remark (`Error from OPUS...` / `Verification timed out...` / `Verification was stopped...`).
 7. **Transient getJobStatus error** — stub status to 503; run poll. Expect: attempt stays `in_progress`, no `remarks`, error logged; a second run with a `completed` stub finalizes it.
-8. **Result file missing** — stub `completed` but an audit log with no `base64_file_content`; run poll. Expect: attempt `success` with `remarks = "Verification succeeded but no result file was returned by OPUS."`
+8. **Result file missing** — stub `completed` but an audit log with no CSV-text content; run poll. Expect: attempt `success` with `remarks = "Verification succeeded but no result file was returned by OPUS."`
 9. **Result upload failure** — stub `completed` with a valid file, but force the Drive upload to throw; run poll. Expect: attempt **`success`** with `remarks = "Verification succeeded but the result file could not be uploaded to Google Drive."`, error logged.
-10. **Extension detection** — feed `getJobResultFile` PDF, XLSX, and CSV byte samples; confirm `.pdf` / `.xlsx` / `.csv` are appended correctly and an unknown signature uploads with no extension.
+10. **CSV normalization** — feed `getJobResultFile` a CSV whose rows are separated by literal `\n` sequences; confirm the uploaded file has real newlines and a `.csv` extension. A CSV with real newlines must pass through unchanged.
 11. **Batch cap** — queue 7 attempts; one submit run processes exactly 5 (oldest first by `createdAt`); the next run takes the remaining 2.
 12. **Overlap** — start two submit runs concurrently against the same backlog; confirm no attempt is processed twice (`SKIP LOCKED`).
 13. **24h timeout** — force an `in_progress` attempt **with an `opusJobId`** to have `updatedAt` older than `VERIFICATION_INPROGRESS_TIMEOUT_HOURS`; run poll. Expect: force-failed, `remarks = "Error from OPUS, please check in OPUS or retry"`.

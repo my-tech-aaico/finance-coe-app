@@ -283,8 +283,10 @@ type AuditOutputVar = { variable_name?: unknown; value?: unknown };
 
 /**
  * opus-api.md §8 — fetch the audit log and extract the single result file.
- * The audit log is NOT returned for storage (it embeds the file as base64).
- * Returns null when no base64_file_content is present.
+ * The audit log is NOT returned for storage (it is large).
+ * Opus now returns the result as plain CSV *text* (no longer a base64 blob)
+ * plus a filename text; this decodes the text to a UTF-8 Buffer.
+ * Returns null when no result-file text is present.
  */
 export async function getJobResultFile(jobExecutionId: string): Promise<{
   buffer: Buffer;
@@ -308,15 +310,22 @@ export async function getJobResultFile(jobExecutionId: string): Promise<{
   const pick = (name: string): unknown =>
     (outputs as AuditOutputVar[]).find((o) => o?.variable_name === name)?.value;
 
-  const base64 = pick("workflow_output_zb1vn5pc6"); //base64_file_content
-  if (typeof base64 !== "string" || !base64) return null;
+  // NOTE: confirm these variable_name ids against the live workflow version —
+  // the result output changed from a base64 file blob to plain CSV text.
+  const csvText = pick("workflow_output_zb1vn5pc6"); // csv_file_content (plain CSV text)
+  if (typeof csvText !== "string" || !csvText) return null;
 
-  const fileTitleRaw = pick("workflow_output_7mir3wue6"); //file_title
-  const folderIdRaw = pick("workflow_output_fv0g3naiu"); //netsuite_folder_id
+  const fileNameRaw = pick("workflow_output_7mir3wue6"); // result file name (may include extension)
+  const folderIdRaw = pick("workflow_output_fv0g3naiu"); // netsuite_folder_id
+
+  // Normalize to a title WITHOUT extension: the poll job appends its own
+  // per-attempt timestamp + ".csv", so a bare title avoids a double extension.
+  const fileName = typeof fileNameRaw === "string" ? fileNameRaw : "";
+  const fileTitle = fileName.replace(/\.[^./\\]+$/, "");
 
   return {
-    buffer: Buffer.from(base64, "base64"),
-    fileTitle: typeof fileTitleRaw === "string" ? fileTitleRaw : "",
+    buffer: Buffer.from(csvText, "utf-8"),
+    fileTitle,
     netsuiteFolderId: typeof folderIdRaw === "string" ? folderIdRaw : "",
   };
 }
