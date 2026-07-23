@@ -225,51 +225,59 @@ headers: { "x-service-key": "${OPUS_SERVICE_KEY}" }
 ```
 
 Response is large (full per-node execution trace). **The audit log is never persisted** —
-it embeds `base64_file_content` (the whole result file), so storing it into `opusResponse`
-would bloat the DB and break the accordion's JSON renderer. On success, `opusResponse`
-holds the small **GetJobExecutionStatus** body only (decision 2026-06-15). Extraction steps:
+storing it into `opusResponse` would bloat the DB and break the accordion's JSON renderer.
+On success, `opusResponse` holds the small **GetJobExecutionStatus** body only
+(decision 2026-06-15).
+
+> **Result format change (decision 2026-07-23).** Opus now returns the result as **plain CSV
+> text** plus a **filename text** — it is no longer a base64-encoded file blob. The
+> extraction below decodes the text to a UTF-8 `Buffer`; there is no base64 decode and no
+> magic-byte extension sniffing (the result is always `.csv`).
+
+Extraction steps:
 
 1. Read `audit.nodes_execution_data["Output"].execution_output` — an array of
-   `{ variable_name, value, type, ... }`. Pull three entries:
-   - `base64_file_content` — the result file, base64-encoded.
-   - `file_title` — the result file's name **without** extension.
+   `{ variable_name, value, type, ... }`. Pull three entries (confirm the `variable_name`
+   ids against the live workflow version — they changed when the result output moved from a
+   base64 blob to CSV text):
+   - **CSV file content** — the result file as **plain CSV text** (UTF-8).
+   - **file name** — the result file's name; may include a `.csv` extension.
    - `netsuite_folder_id` — the **Google Drive** folder id to upload into (Opus echoes back
      the Drive folder id; it is *not* the NetSuite numeric id seen on the Region-to-Vendor
      node).
-2. Decode `base64_file_content` to a `Buffer`. **Exactly one** output file is expected.
-3. Detect the file extension from the decoded bytes (magic bytes — §8.1). Final filename =
-   `file_title` + `_` + a **per-attempt timestamp** + detected extension (§8.2).
+2. Encode the CSV text to a `Buffer` (`Buffer.from(text, "utf-8")`). **Exactly one** output
+   file is expected.
+3. The extension is always `.csv`. Normalize the filename to a title **without** extension
+   (strip a trailing `.<ext>`). Final filename = `<title>` + `_` + a **per-attempt
+   timestamp** + `.csv` (§8.2).
 4. Upload the buffer to the `netsuite_folder_id` Drive folder (fall back to
    `claim.driveNetsuiteFolderId` if the audit value is missing) — see §8.2.
 
 `getJobResultFile` therefore returns `{ buffer, fileTitle, netsuiteFolderId }` (no `raw`
-for storage). If the `Output` node / `base64_file_content` entry is missing or empty: the
-verification still counts as **success**, but record the problem in `remarks` (see
-`scheduler.md` §8.2 error table) — do **not** flip the attempt to `failed`.
+for storage), where `fileTitle` is the extension-stripped name. If the `Output` node / the
+CSV-text entry is missing or empty: the verification still counts as **success**, but record
+the problem in `remarks` (see `scheduler.md` §8.2 error table) — do **not** flip the attempt
+to `failed`.
 
-### 8.1 Extension detection (magic bytes)
+### 8.1 CSV text handling
 
-Replicate this logic in TypeScript (reference is the workflow's Python):
-
-| Signature (first bytes) | Extension |
-|-------------------------|-----------|
-| `25 50 44 46` (`%PDF`)  | `.pdf`    |
-| `50 4B 03 04` (`PK..`)  | `.xlsx`   |
-| first ~15 bytes decode as UTF-8 containing `EXTERNALID` / `ID,` / `DATE,` | `.csv` |
-| otherwise               | `` (none) — log the first 4 bytes as hex |
-
-Final filename: take a base name (e.g. `file_title`, falling back to the statement
-`displayId`), append a per-attempt timestamp postfix (§8.2), then the detected extension.
+The result is always CSV text, so no magic-byte extension detection is needed. As a
+defensive step the app runs a small CSV normalizer that rewrites any literal `\n`
+sequences (two chars: `0x5C 0x6E`) Opus may embed into real newlines; a CSV that already
+has real newlines passes through untouched. Final filename: take a base name (the returned
+file name with any extension stripped, falling back to the statement `displayId`), append a
+per-attempt timestamp postfix (§8.2), then `.csv`.
 
 ### 8.2 Drive upload of the result
 
-Upload the decoded buffer into the `netsuite_folder_id` folder using a new Drive helper
+Upload the CSV buffer into the `netsuite_folder_id` folder using a new Drive helper
 `uploadDriveFileFromBuffer(folderId, name, buffer, mimeType)` (`scheduler.md` §7.5 / §12).
 This is the **only** Drive *write* the schedulers do.
 
 **Timestamped history — one file per successful attempt (decision 2026-07-14).** The
-result filename is `<base>_<timestamp><ext>`, where `<base>` is `file_title` (fallback:
-statement `displayId`) and `<timestamp>` is a **per-attempt** marker derived from the
+result filename is `<base>_<timestamp>.csv`, where `<base>` is the returned file name with
+any extension stripped (fallback: statement `displayId`) and `<timestamp>` is a
+**per-attempt** marker derived from the
 verification attempt's `updatedAt` (formatted `YYYYMMDDHHMMSS`, e.g. `20260714153045`).
 Because the postfix is distinct per attempt, each successful verification writes a
 **distinct file** — so a re-verify (Retry Verification, e.g. after adding a receipt) leaves
@@ -291,9 +299,7 @@ while **separate attempts** get distinct timestamps and thus separate files.
 > current result per statement; re-verify refreshes the file in place"), which is no longer
 > in effect.
 
-`mimeType` is derived from the detected extension (`.pdf`→`application/pdf`,
-`.xlsx`→`application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`,
-`.csv`→`text/csv`, none→`application/octet-stream`).
+`mimeType` is `text/csv` (the result is always a CSV file).
 
 > **Ownership note:** the Opus workflow itself contains an `Upload to Google Drive [Request
 > Builder]` node, but that Opus-side upload fails intermittently, so the **app** owns this

@@ -265,24 +265,6 @@ export async function runVerificationSubmit(): Promise<VerificationSubmitResult>
   return { ok, failed, batchSize: claimed.length, ms };
 }
 
-function detectExtension(buf: Buffer): string {
-  if (buf.length >= 4 && buf[0] === 0x25 && buf[1] === 0x50 && buf[2] === 0x44 && buf[3] === 0x46) {
-    return ".pdf"; // %PDF
-  }
-  if (buf.length >= 4 && buf[0] === 0x50 && buf[1] === 0x4b && buf[2] === 0x03 && buf[3] === 0x04) {
-    return ".xlsx"; // PK.. (zip/OpenXML)
-  }
-  try {
-    const sample = buf.subarray(0, 15).toString("utf-8").toUpperCase();
-    if (sample.includes("EXTERNALID") || sample.includes("_EXTID") || sample.includes("ID,") || sample.includes("DATE,")) {
-      return ".csv";
-    }
-  } catch {
-    // not valid UTF-8 → not a CSV
-  }
-  return "";
-}
-
 function normalizeOpusCsv(buf: Buffer): Buffer {
   // Opus encodes row terminators as literal \n (two chars: 0x5C 0x6E) inside quotes.
   // Data rows: ,"<\n>" → field 21 acts as terminator; replace with empty field + real newline + open next row.
@@ -397,8 +379,12 @@ export async function runVerificationPoll(): Promise<VerificationPollResult> {
         if (!result) {
           remarks = REMARK_NO_RESULT;
         } else {
-          const ext = detectExtension(result.buffer);
-          const uploadBuffer = ext === ".csv" ? normalizeOpusCsv(result.buffer) : result.buffer;
+          // Opus now returns the result as CSV text, so the output is always a
+          // .csv file. normalizeOpusCsv stays as a defensive step: it only
+          // rewrites literal "\n" sequences, so a CSV that already has real
+          // newlines passes through untouched.
+          const ext = ".csv";
+          const uploadBuffer = normalizeOpusCsv(result.buffer);
           // Postfix a per-attempt timestamp so each successful verification writes a
           // DISTINCT file (a history accumulates in the netsuite folder — one per attempt).
           // Source the timestamp from attempt.updatedAt (a stable "verification started at"
